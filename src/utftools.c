@@ -4,7 +4,9 @@
 #include "utf8.h"
 
 static const R_CallMethodDef CallEntries[] = {
-    {"utf8_decode", (DL_FUNC) &utf8_decode, 1},
+    {"C_utf8_len", (DL_FUNC) &C_utf8_len, 1},
+    {"C_utf8_cplen", (DL_FUNC) &C_utf8_cplen, 1},
+    {"C_utf8_decode", (DL_FUNC) &C_utf8_decode, 1},
     {NULL, NULL, 0}
 };
 

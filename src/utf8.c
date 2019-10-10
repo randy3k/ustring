@@ -23,7 +23,7 @@ static inline int utf8_is_continuation(const unsigned char c) {
 }
 
 
-int utf8_cplen(const unsigned char c) {
+static int utf8_cplen(const unsigned char c) {
     utf8_mask u;
     int i;
     for (i = 0; i < UTF8_MASKS_LEN; i++) {
@@ -54,7 +54,8 @@ int utf8_len(const char* s) {
     return n;
 }
 
-int utf8_decode1(const char* s, uint32_t* cp) {
+
+static int utf8_decode1(const char* s, uint32_t* cp) {
     const char* c;
     int m, i;
     m = utf8_cplen(*s);
@@ -74,8 +75,19 @@ int utf8_decode1(const char* s, uint32_t* cp) {
 }
 
 
+SEXP C_utf8_len(SEXP s_) {
+    PROTECT(s_);
+    if (TYPEOF(s_) != STRSXP || LENGTH(s_) != 1) {
+        Rf_error("expect one-element character");
+    }
+    const char* s = R_CHAR(Rf_asChar(s_));
+    int n = utf8_len(s);
+    UNPROTECT(1);
+    return Rf_ScalarInteger(n);
+}
 
-SEXP utf8_decode(SEXP s_) {
+
+SEXP C_utf8_decode(SEXP s_) {
     PROTECT(s_);
     if (TYPEOF(s_) != STRSXP || LENGTH(s_) != 1) {
         Rf_error("expect one-element character");
@@ -94,6 +106,37 @@ SEXP utf8_decode(SEXP s_) {
         m = utf8_decode1(t, &cp);
         if (m) {
             pt[i] = cp;
+            t = t + m;
+        } else {
+            pt[i] = NA_INTEGER;
+            t++;
+        }
+        i++;
+    }
+    UNPROTECT(2);
+    return p;
+}
+
+
+SEXP C_utf8_cplen(SEXP s_) {
+    PROTECT(s_);
+    if (TYPEOF(s_) != STRSXP || LENGTH(s_) != 1) {
+        Rf_error("expect one-element character");
+    }
+    const char* s = R_CHAR(Rf_asChar(s_));
+    int n = utf8_len(s);
+    SEXP p = PROTECT(Rf_allocVector(INTSXP, n));
+    int* pt = INTEGER(p);
+    uint32_t cp;
+    int m;
+    const char* t;
+    int i;
+    t = s;
+    i = 0;
+    while (i < n) {
+        m = utf8_decode1(t, &cp);
+        if (m) {
+            pt[i] = m;
             t = t + m;
         } else {
             pt[i] = NA_INTEGER;
