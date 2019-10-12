@@ -4,7 +4,6 @@
 typedef struct {
     unsigned char mask;  // data stored in these bits
     unsigned char lead;  // leading bits
-    int trailing;  // number of bits used to store data
 } utf8_mask;
 
 
@@ -16,6 +15,17 @@ static utf8_mask utf8_masks[] = {
 };
 
 static size_t UTF8_MASKS_LEN = sizeof(utf8_masks) / sizeof(utf8_masks[0]);
+
+
+static int is_ascii(const char* s) {
+    const char* t;
+    for (t = s; *t != '\0'; t++) {
+        if (*t > 0x7F) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 
 static inline int utf8_is_continuation(const unsigned char c) {
@@ -75,12 +85,22 @@ static int utf8_decode1(const char* s, uint32_t* cp) {
 }
 
 
-SEXP C_utf8_len(SEXP s_) {
-    PROTECT(s_);
+const char* validate_utf8(SEXP s_) {
     if (TYPEOF(s_) != STRSXP || LENGTH(s_) != 1) {
         Rf_error("expect one-element character");
     }
-    const char* s = R_CHAR(Rf_asChar(s_));
+    SEXP c = Rf_asChar(s_);
+    const char* s = R_CHAR(c);
+    if (!is_ascii(s) && Rf_getCharCE(c) != CE_UTF8) {
+        Rf_error("non UTF-8 encoding");
+    }
+    return s;
+}
+
+
+SEXP C_utf8_len(SEXP s_) {
+    PROTECT(s_);
+    const char* s = validate_utf8(s_);;
     int n = utf8_len(s);
     UNPROTECT(1);
     return Rf_ScalarInteger(n);
@@ -89,10 +109,7 @@ SEXP C_utf8_len(SEXP s_) {
 
 SEXP C_utf8_decode(SEXP s_) {
     PROTECT(s_);
-    if (TYPEOF(s_) != STRSXP || LENGTH(s_) != 1) {
-        Rf_error("expect one-element character");
-    }
-    const char* s = R_CHAR(Rf_asChar(s_));
+    const char* s = validate_utf8(s_);;
     int n = utf8_len(s);
     SEXP p = PROTECT(Rf_allocVector(INTSXP, n));
     int* pt = INTEGER(p);
@@ -120,10 +137,7 @@ SEXP C_utf8_decode(SEXP s_) {
 
 SEXP C_utf8_cplen(SEXP s_) {
     PROTECT(s_);
-    if (TYPEOF(s_) != STRSXP || LENGTH(s_) != 1) {
-        Rf_error("expect one-element character");
-    }
-    const char* s = R_CHAR(Rf_asChar(s_));
+    const char* s = validate_utf8(s_);;
     int n = utf8_len(s);
     SEXP p = PROTECT(Rf_allocVector(INTSXP, n));
     int* pt = INTEGER(p);
