@@ -1,17 +1,17 @@
 #ifndef UTF8_H__
 #define UTF8_H__
 
+#if !defined(static_inline)
+#if defined(_MSC_VER) || defined(__GNUC__)
+#define static_inline static __inline
+#else
+#define static_inline static
+#endif
+#endif
 
-#define R_NO_REMAP
-#include <R.h>
-#include <Rinternals.h>
+long utf8_len(const unsigned char* s, long n);
 
-SEXP C_utf8_len(SEXP s_);
-
-SEXP C_utf8_cplen(SEXP s_);
-
-SEXP C_utf8_decode(SEXP s_);
-
+void utf8_collector(const unsigned char* s, int n, void collect(int, int, void*, int), void* data);
 
 
 #endif /* end of include guard: UTF8_H__ */

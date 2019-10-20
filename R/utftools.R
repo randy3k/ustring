@@ -14,8 +14,8 @@ utf8_len <- function(text) {
 #' Calcuate code point lenghts of each char in a UTF-8 encoded text.
 #' @param text a scalar character
 #' @export
-utf8_cplen <- function(text) {
-    .Call(C_utf8_cplen, text)
+utf8_codelen <- function(text) {
+    .Call(C_utf8_codelen, text)
 }
 
 
@@ -23,6 +23,17 @@ utf8_cplen <- function(text) {
 #' @param text a scalar character
 #' @export
 #' @export
-utf8_decode <- function(text) {
-    .Call(C_utf8_decode, text)
+utf8_code <- function(text) {
+    .Call(C_utf8_code, text)
+}
+
+#' Convert a UTF-8 encoded text to UTF-32 bytestring.
+#' @param text a scalar character
+#' @param little_endian use little endian
+#' @export
+#' @export
+utf8_to_utf32 <- function(text, little_endian = TRUE) {
+    s <- .Call(C_utf8_to_utf32, text, little_endian)
+    class(s) <- "bytestring"
+    s
 }

@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 #include "utf8.h"
 
 
@@ -18,23 +19,12 @@ static utf8_mask utf8_masks[] = {
 static size_t UTF8_MASKS_LEN = sizeof(utf8_masks) / sizeof(utf8_masks[0]);
 
 
-static int is_ascii(const char* s) {
-    const char* t;
-    for (t = s; *t != '\0'; t++) {
-        if (*t > 0x7F) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-
-static inline int utf8_is_continuation(const unsigned char c) {
+static_inline int utf8_is_continuation(const unsigned char c) {
     return (c >> 6) == 0x02;  // 0b00000010
 }
 
 
-static int utf8_cplen(const unsigned char c) {
+static int utf8_codelen1(const unsigned char c) {
     utf8_mask u;
     int i;
     for (i = 0; i < UTF8_MASKS_LEN; i++) {
@@ -46,37 +36,47 @@ static int utf8_cplen(const unsigned char c) {
     return i < UTF8_MASKS_LEN? i + 1 : 0;
 }
 
-
-int utf8_len(const char* s) {
-    int n = 0;
+/*
+@param s utf8 string
+@param n number of code points in string or -1 when it is unknown but the string is null terminated
+*/
+long utf8_len(const unsigned char* s, long n) {
+    int k = 0;
     int m, j;
-    const char* c;
-    for (c = s; *c != '\0'; ) {
-        m = utf8_cplen(*c);
+    long i;
+    const unsigned char* c;
+    for (i = 0, c = s; i < n || (n == -1 && *c != '\0'); ) {
+        m = utf8_codelen1(*c);
         for (j = 1; j < m; j++) {
             if (!utf8_is_continuation(*(c + j))) {
                 m = 0;
                 break;
             }
         }
-        c += m > 0? m : 1;
-        n++;
+        if (m > 0) {
+            c += m;
+            i += m;
+        } else {
+            c++;
+            i++;
+        }
+        k++;
     }
-    return n;
+    return k;
 }
 
 
-static int utf8_decode1(const char* s, uint32_t* cp) {
-    const char* c;
+static int utf8_code1(const unsigned char* s, int* cp) {
+    const unsigned char* c;
     int m, i;
-    m = utf8_cplen(*s);
+    m = utf8_codelen1(*s);
     if (!m) {
         return 0;
     }
     utf8_mask u = utf8_masks[m - 1];
-    uint32_t temp = *s & u.mask;
+    int temp = *s & u.mask;
     for (c = s + 1, i = 1; i < m; c++, i++) {
-        if (*c == '\n' || !utf8_is_continuation(*c)) {
+        if (!utf8_is_continuation(*c)) {
             return 0;
         }
         temp = (temp << 6) + (*c & 0X3F);  // 0b00111111
@@ -86,79 +86,34 @@ static int utf8_decode1(const char* s, uint32_t* cp) {
 }
 
 
-const char* validate_utf8(SEXP s_) {
-    if (TYPEOF(s_) != STRSXP || LENGTH(s_) != 1) {
-        Rf_error("expect one-element character");
-    }
-    SEXP c = Rf_asChar(s_);
-    const char* s = R_CHAR(c);
-    if (!is_ascii(s) && Rf_getCharCE(c) != CE_UTF8) {
-        Rf_error("non UTF-8 encoding");
-    }
-    return s;
-}
 
 
-SEXP C_utf8_len(SEXP s_) {
-    PROTECT(s_);
-    const char* s = validate_utf8(s_);;
-    int n = utf8_len(s);
-    UNPROTECT(1);
-    return Rf_ScalarInteger(n);
-}
-
-
-SEXP C_utf8_decode(SEXP s_) {
-    PROTECT(s_);
-    const char* s = validate_utf8(s_);;
-    int n = utf8_len(s);
-    SEXP p = PROTECT(Rf_allocVector(INTSXP, n));
-    int* pt = INTEGER(p);
-    uint32_t cp;
+/*
+@param s utf-8 string
+@param n number of code points in the string
+@param collect a callback function,
+            the first arg is the code point,
+            the second arg is the number of code unit
+            the third arg is the user data
+            the forth arg is the iteration number
+@param data user data passed to [collect]
+*/
+void utf8_collector(const unsigned char* s, int n, void collect(int, int, void*, int), void* data) {
+    int cp = 0;
     int m;
-    const char* t;
+    const unsigned char* t;
     int i;
     t = s;
     i = 0;
     while (i < n) {
-        m = utf8_decode1(t, &cp);
+        m = utf8_code1(t, &cp);
         if (m) {
-            pt[i] = cp;
+            collect(cp, m, data, i);
             t = t + m;
         } else {
-            pt[i] = NA_INTEGER;
+            collect(0, 1, data, i);
             t++;
         }
         i++;
     }
-    UNPROTECT(2);
-    return p;
-}
-
-
-SEXP C_utf8_cplen(SEXP s_) {
-    PROTECT(s_);
-    const char* s = validate_utf8(s_);;
-    int n = utf8_len(s);
-    SEXP p = PROTECT(Rf_allocVector(INTSXP, n));
-    int* pt = INTEGER(p);
-    uint32_t cp;
-    int m;
-    const char* t;
-    int i;
-    t = s;
-    i = 0;
-    while (i < n) {
-        m = utf8_decode1(t, &cp);
-        if (m) {
-            pt[i] = m;
-            t = t + m;
-        } else {
-            pt[i] = NA_INTEGER;
-            t++;
-        }
-        i++;
-    }
-    UNPROTECT(2);
-    return p;
 }
