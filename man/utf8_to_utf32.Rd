@@ -2,13 +2,15 @@
 % Please edit documentation in R/utftools.R
 \name{utf8_to_utf32}
 \alias{utf8_to_utf32}
-\title{Convert a UTF-8 encoded text to UTF-32 bytestring.}
+\title{Convert a UTF-8 string to UTF-32 raw string.}
 \usage{
-utf8_to_utf32(text)
+utf8_to_utf32(text, little_endian = TRUE)
 }
 \arguments{
 \item{text}{a scalar character}
+
+\item{little_endian}{use little endian}
 }
 \description{
-Convert a UTF-8 encoded text to UTF-32 bytestring.
+Convert a UTF-8 string to UTF-32 raw string.
 }

@@ -1,5 +1,4 @@
-#include <stdint.h>
-#include <string.h>
+#include <math.h>
 #include "utf8.h"
 
 
@@ -38,13 +37,14 @@ static int utf8_codelen1(const unsigned char c) {
 
 /*
 @param s utf8 string
-@param n number of code points in string or -1 when it is unknown but the string is null terminated
+@param n the length of the string (as strlen) or -1 when it is unknown but the string is null terminated
 */
 long utf8_len(const unsigned char* s, long n) {
     int k = 0;
     int m, j;
     long i;
     const unsigned char* c;
+
     for (i = 0, c = s; i < n || (n == -1 && *c != '\0'); ) {
         m = utf8_codelen1(*c);
         for (j = 1; j < m; j++) {
@@ -66,7 +66,7 @@ long utf8_len(const unsigned char* s, long n) {
 }
 
 
-static int utf8_code1(const unsigned char* s, int* cp) {
+int utf8_encode1(const unsigned char* s, int* cp) {
     const unsigned char* c;
     int m, i;
     m = utf8_codelen1(*s);
@@ -86,11 +86,34 @@ static int utf8_code1(const unsigned char* s, int* cp) {
 }
 
 
+int utf8_decode1(int cp, unsigned char* s) {
+    int m = 0;
+    if (0 < cp && cp <= 0x7F) {
+        s[0] = cp;
+        m = 1;
+    } else if (cp <= 0x7FF) {
+        s[0] = 0xC0 + cp/64;
+        s[1] = 0x80 + cp%64;
+        m = 2;
+    } else if (cp <= 0xFFFF) {
+        s[0] = 0xE0 + cp/4096;
+        s[1] = 0x80 + cp/64%64;
+        s[2] = 0x80 + cp%64;
+        m = 3;
+    } else if (cp <= 0x10FFFF) {
+        s[0] = 0xF0 + cp/262144;
+        s[1] = 0x80 + cp/4096%64;
+        s[2] = 0x80 + cp%64%64;
+        s[3] = 0x80 + cp%64;
+        m = 4;
+    }
+    return m;
+}
 
 
 /*
-@param s utf-8 string
-@param n number of code points in the string
+@param s UTF-8 string
+@param n number of code points in the string as returned by [utf8_len]
 @param collect a callback function,
             the first arg is the code point,
             the second arg is the number of code unit
@@ -98,7 +121,7 @@ static int utf8_code1(const unsigned char* s, int* cp) {
             the forth arg is the iteration number
 @param data user data passed to [collect]
 */
-void utf8_collector(const unsigned char* s, int n, void collect(int, int, void*, int), void* data) {
+void utf8_cp_collector(const unsigned char* s, long n, void collect(int, int, void*, long), void* data) {
     int cp = 0;
     int m;
     const unsigned char* t;
@@ -106,7 +129,7 @@ void utf8_collector(const unsigned char* s, int n, void collect(int, int, void*,
     t = s;
     i = 0;
     while (i < n) {
-        m = utf8_code1(t, &cp);
+        m = utf8_encode1(t, &cp);
         if (m) {
             collect(cp, m, data, i);
             t = t + m;

@@ -27,13 +27,23 @@ utf8_code <- function(text) {
     .Call(C_utf8_code, text)
 }
 
-#' Convert a UTF-8 encoded text to UTF-32 bytestring.
+
+#' Convert a UTF-8 string to UTF-32 raw string.
 #' @param text a scalar character
 #' @param little_endian use little endian
 #' @export
-#' @export
 utf8_to_utf32 <- function(text, little_endian = TRUE) {
     s <- .Call(C_utf8_to_utf32, text, little_endian)
-    class(s) <- "bytestring"
+    attr(s, "encoding") <- if (little_endian) "UTF-32LE" else "UTF-32BE"
     s
+}
+
+
+#' Convert a UTF-32 raw string to UTF-8 string.
+#' @param s a UTF-32 raw string
+#' @export
+utf32_to_utf8 <- function(s) {
+    text <- .Call(C_utf32_to_utf8, s)
+    Encoding(text) <- "UTF-8"
+    text
 }
