@@ -30,11 +30,12 @@ utf8_code <- function(text) {
 
 #' Convert a UTF-8 string to UTF-32 raw string.
 #' @param text a scalar character
-#' @param little_endian use little endian
+#' @param endian little endian or big endian?
 #' @export
-utf8_to_utf32 <- function(text, little_endian = TRUE) {
-    s <- .Call(C_utf8_to_utf32, text, little_endian)
-    attr(s, "encoding") <- if (little_endian) "UTF-32LE" else "UTF-32BE"
+utf8_to_utf32 <- function(text, endian = c("little", "big")) {
+    endian <- match.arg(endian)
+    s <- .Call(C_utf8_to_utf32, text, endian)
+    attr(s, "encoding") <- if (endian == "little") "UTF-32LE" else "UTF-32BE"
     s
 }
 

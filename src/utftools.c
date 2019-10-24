@@ -28,7 +28,9 @@ static int is_ascii(const unsigned char* s) {
 static const unsigned char* validate_utf8(SEXP s_) {
     const unsigned char* s;
     if (TYPEOF(s_) == STRSXP ) {
-        if (LENGTH(s_) != 1) Rf_error("expect one-element character or UTF-8 raw string");
+        if (LENGTH(s_) != 1) {
+            Rf_error("expect one-element character or UTF-8 raw string");
+        }
         SEXP c = Rf_asChar(s_);
         s = (const unsigned char*) R_CHAR(c);
         if (!is_ascii(s) && Rf_getCharCE(c) != CE_UTF8) {
@@ -36,6 +38,10 @@ static const unsigned char* validate_utf8(SEXP s_) {
         }
     } else if (TYPEOF(s_) == RAWSXP) {
         s = RAW(s_);
+        SEXP le_ = Rf_getAttrib(s_, Rf_install("encoding"));
+        if (le_ != R_NilValue && strcmp(R_CHAR(Rf_asChar(le_)), "UTF-8") != 0) {
+            Rf_error("non UTF-8 encoding");
+        }
     } else {
         Rf_error("expect one-element character or UTF-8 raw string");
     }
@@ -142,15 +148,15 @@ void utf8_to_utf32_big_callback(int cp, int m, void* data, long i) {
     *t = *t + utf32_decode1_big(cp, *t);;
 }
 
-SEXP C_utf8_to_utf32(SEXP s_, SEXP le_) {
+SEXP C_utf8_to_utf32(SEXP s_, SEXP endian) {
     PROTECT(s_);
-    int le = Rf_asLogical(le_);
+    char le = CHAR(Rf_asChar(endian))[0];
     const unsigned char* s = validate_utf8(s_);;
     long n = utf8_len_(s_, s);
     SEXP p = PROTECT(Rf_allocVector(RAWSXP, n * sizeof(uint32_t) / sizeof(char)));
     unsigned char* t = (unsigned char*) RAW(p);
     unsigned char* w = t;
-    if (le) {
+    if (le == 'l') {
         utf8_cp_collector(s, n, utf8_to_utf32_little_callback, &w);
     } else {
         utf8_cp_collector(s, n, utf8_to_utf32_big_callback, &w);
@@ -188,7 +194,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_utf8_len", (DL_FUNC) &C_utf8_len, 1},
     {"C_utf8_codelen", (DL_FUNC) &C_utf8_codelen, 1},
     {"C_utf8_code", (DL_FUNC) &C_utf8_code, 1},
-    {"C_utf8_to_utf32", (DL_FUNC) &C_utf8_to_utf32, 1},
+    {"C_utf8_to_utf32", (DL_FUNC) &C_utf8_to_utf32, 2},
     {"C_utf32_to_utf8", (DL_FUNC) &C_utf32_to_utf8, 1},
     {NULL, NULL, 0}
 };
