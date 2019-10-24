@@ -52,27 +52,30 @@ static const unsigned char* validate_utf32(SEXP s_, int* le) {
     }
     long n = LENGTH(s_);
     SEXP le_ = Rf_getAttrib(s_, Rf_install("encoding"));
-    int unknown_encoding = 1;
-    if (le_ == R_NilValue) {
+    int known_endianness = 0;
+    if (n == 0) {
+        *le = 1;
+        known_endianness = 1;
+    } else if (le_ == R_NilValue) {
         if (n > 4) {
             if (s[0] == 0 && s[1] == 0 && s[2] == 0xFE && s[3] == 0xFF) {
                 *le = 0;
                 s += 4;
-                unknown_encoding = 0;
+                known_endianness = 1;
             } else if (s[0] == 0xFF && s[1] == 0xFE && s[2] == 0 && s[3] == 0) {
                 *le = 1;
                 s += 4;
-                unknown_encoding = 0;
+                known_endianness = 1;
             }
         }
     } else if (strcmp(R_CHAR(Rf_asChar(le_)), "UTF-32LE") == 0) {
         *le = 1;
-        unknown_encoding = 0;
+        known_endianness = 1;
     } else if (strcmp(R_CHAR(Rf_asChar(le_)), "UTF-32BE") == 0) {
         *le = 0;
-        unknown_encoding = 0;
+        known_endianness = 1;
     }
-    if (unknown_encoding) Rf_error("unknown encoding");
+    if (!known_endianness) Rf_error("unknown endianness");
     return s;
 }
 
