@@ -121,7 +121,7 @@ int utf8_decode1(int cp, unsigned char* s) {
     } else if (cp <= 0x10FFFF) {
         s[0] = 0xF0 + cp/262144;
         s[1] = 0x80 + cp/4096%64;
-        s[2] = 0x80 + cp%64%64;
+        s[2] = 0x80 + cp/64%64;
         s[3] = 0x80 + cp%64;
         m = 4;
     }

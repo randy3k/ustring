@@ -48,10 +48,11 @@ static const unsigned char* validate_utf8(SEXP s_) {
 }
 
 
-static const unsigned char* validate_utf32(SEXP s_, int* le) {
+static const unsigned char* validate_utf32(SEXP s_, long* m, int* le) {
     const unsigned char* s;
     if (TYPEOF(s_) == RAWSXP) {
         s = RAW(s_);
+        *m = LENGTH(s_) / 4;
     } else {
         Rf_error("expect UTF-32 raw string");
     }
@@ -66,10 +67,12 @@ static const unsigned char* validate_utf32(SEXP s_, int* le) {
             if (s[0] == 0 && s[1] == 0 && s[2] == 0xFE && s[3] == 0xFF) {
                 *le = 0;
                 s += 4;
+                *m = *m - 1;
                 known_endianness = 1;
             } else if (s[0] == 0xFF && s[1] == 0xFE && s[2] == 0 && s[3] == 0) {
                 *le = 1;
                 s += 4;
+                *m = *m - 1;
                 known_endianness = 1;
             }
         }
@@ -174,10 +177,9 @@ void utf32_to_utf8_callback(int cp, void* data, long i) {
 
 SEXP C_utf32_to_utf8(SEXP s_) {
     PROTECT(s_);
-    long n = LENGTH(s_);
-    long m = n / 4;
+    long m = 0;
     int le;
-    const unsigned char* s = validate_utf32(s_, &le);
+    const unsigned char* s = validate_utf32(s_, &m, &le);
     SEXP p = PROTECT(Rf_allocVector(STRSXP, 1));
     unsigned char* t;
     t = (unsigned char*) malloc(4 * m * sizeof(char));

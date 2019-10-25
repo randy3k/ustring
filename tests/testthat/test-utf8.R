@@ -12,15 +12,30 @@ test_that("utf8 works for raw", {
 
 
 test_that("utf8_to_utf32 on string works", {
-    s <- utf8_to_utf32("a𐐀𠍲")
-    expect_equal(length(s), 12)
-    expect_equal(s[1:4], as.raw(c(97, 0, 0, 0)))
-    expect_equal(s[5:8], as.raw(c(0, 4, 1, 0)))
-    expect_equal(s[9:12], as.raw(c(114, 3, 2, 0)))
+    s <- "a𐐀𠍲"
+    s_utf32 <- utf8_to_utf32(s)
+    expect_equal(length(s_utf32), 12)
+    expect_equal(s_utf32[1:4], as.raw(c(97, 0, 0, 0)))
+    expect_equal(s_utf32[5:8], as.raw(c(0, 4, 1, 0)))
+    expect_equal(s_utf32[9:12], as.raw(c(114, 3, 2, 0)))
 
-    s <- utf8_to_utf32("a𐐀𠍲", endian = "big")
-    expect_equal(length(s), 12)
-    expect_equal(s[1:4], rev(as.raw(c(97, 0, 0, 0))))
-    expect_equal(s[5:8], rev(as.raw(c(0, 4, 1, 0))))
-    expect_equal(s[9:12], rev(as.raw(c(114, 3, 2, 0))))
+    s <- "a𐐀𠍲"
+    s_utf32 <- utf8_to_utf32(s, endian = "big")
+    expect_equal(length(s_utf32), 12)
+    expect_equal(s_utf32[1:4], rev(as.raw(c(97, 0, 0, 0))))
+    expect_equal(s_utf32[5:8], rev(as.raw(c(0, 4, 1, 0))))
+    expect_equal(s_utf32[9:12], rev(as.raw(c(114, 3, 2, 0))))
+})
+
+
+test_that("utf32_to_utf8 on string works", {
+    s <- "a𐐀𠍲"
+    s_utf32 <- utf8_to_utf32(s)
+    expect_equal(utf32_to_utf8(s_utf32), s)
+
+    s_utf32 <- utf8_to_utf32(s, endian = "big")
+    expect_equal(utf32_to_utf8(s_utf32), s)
+
+    s_utf32 <- iconv(s, to = "UTF-32", toRaw = TRUE)[[1]]
+    expect_equal(utf32_to_utf8(s_utf32), s)
 })
