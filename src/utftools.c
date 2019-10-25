@@ -15,7 +15,6 @@
 #endif
 
 static int is_ascii(const unsigned char* s) {
-    // FIXME: s could contain NULL
     const unsigned char* t;
     for (t = s; *t != '\0'; t++) {
         if (*t > 0x7F) {
