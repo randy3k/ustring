@@ -36,6 +36,6 @@ test_that("utf32_to_utf8 on string works", {
     s_utf32 <- utf8_to_utf32(s, endian = "big")
     expect_equal(utf32_to_utf8(s_utf32), s)
 
-    s_utf32 <- iconv(s, to = "UTF-32", toRaw = TRUE)[[1]]
+    s_utf32 <- iconv(s, from = "UTF-8", to = "UTF-32", toRaw = TRUE)[[1]]
     expect_equal(utf32_to_utf8(s_utf32), s)
 })
