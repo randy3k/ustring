@@ -153,7 +153,7 @@ SEXP C_utf8_to_utf32(SEXP s_, SEXP endian) {
     char le = CHAR(Rf_asChar(endian))[0];
     const unsigned char* s = validate_utf8(s_);;
     long n = utf8_len_(s_, s);
-    SEXP p = PROTECT(Rf_allocVector(RAWSXP, n * sizeof(uint32_t) / sizeof(char)));
+    SEXP p = PROTECT(Rf_allocVector(RAWSXP, 4 * n));
     unsigned char* t = (unsigned char*) RAW(p);
     unsigned char* w = t;
     if (le == 'l') {
