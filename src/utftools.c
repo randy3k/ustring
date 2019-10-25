@@ -105,9 +105,10 @@ SEXP C_utf8_len(SEXP s_) {
 }
 
 
-void utf8_codelen_callback(int cp, int m, void* data, long i) {
+void utf8_codelen_callback(int cp, void* data, long i) {
     int* pt = (int*) data;
-    pt[i] = m? m : NA_INTEGER;
+    int m = utf8_codelen(cp);
+    pt[i] = m ? m : 1;
 }
 
 SEXP C_utf8_codelen(SEXP s_) {
@@ -122,9 +123,9 @@ SEXP C_utf8_codelen(SEXP s_) {
 }
 
 
-void utf8_code_callback(int cp, int m, void* data, long i) {
+void utf8_code_callback(int cp, void* data, long i) {
     int* pt = (int*) data;
-    pt[i] = cp? cp : NA_INTEGER;
+    pt[i] = cp ? cp : NA_INTEGER;
 }
 
 SEXP C_utf8_code(SEXP s_) {
@@ -138,12 +139,12 @@ SEXP C_utf8_code(SEXP s_) {
     return p;
 }
 
-void utf8_to_utf32_little_callback(int cp, int m, void* data, long i) {
+void utf8_to_utf32_little_callback(int cp, void* data, long i) {
     unsigned char** t = (unsigned char**) data;
     *t = *t + utf32_decode1_little(cp, *t);
 }
 
-void utf8_to_utf32_big_callback(int cp, int m, void* data, long i) {
+void utf8_to_utf32_big_callback(int cp, void* data, long i) {
     unsigned char** t = (unsigned char**) data;
     *t = *t + utf32_decode1_big(cp, *t);;
 }
@@ -167,7 +168,7 @@ SEXP C_utf8_to_utf32(SEXP s_, SEXP endian) {
 }
 
 
-void utf32_to_utf8_callback(int cp, int m, void* data, long i) {
+void utf32_to_utf8_callback(int cp, void* data, long i) {
     unsigned char** t = (unsigned char**) data;
     *t = *t + utf8_decode1(cp, *t);
 }

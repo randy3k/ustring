@@ -4,7 +4,7 @@
 
 int utf32_encode1_little(const unsigned char* s, int* cp) {
     int m;
-    uint32_t x = s[0] + s[1]*256 + s[2]*65536 + s[3]*16777216;
+    int x = s[0] + s[1]*256 + s[2]*65536 + s[3]*16777216;
     if (x > 0x10FFFF) {
         m = 0;
         x = 0;
@@ -18,7 +18,7 @@ int utf32_encode1_little(const unsigned char* s, int* cp) {
 
 int utf32_encode1_big(const unsigned char* s, int* cp) {
     int m;
-    uint32_t x = s[3] + s[2]*256 + s[1]*65536 + s[0]*16777216;
+    int x = s[3] + s[2]*256 + s[1]*65536 + s[0]*16777216;
     if (x > 0x10FFFF) {
         m = 0;
         x = 0;
@@ -56,7 +56,7 @@ int utf32_decode1_big(int cp, unsigned char* s) {
 
 void utf32_cp_collector(
             const unsigned char* s, long n,
-            void collect(int, int, void*, long), void* data,
+            void collect(int, void*, long), void* data,
             int le) {
     int cp = 0;
     const unsigned char* t;
@@ -66,14 +66,14 @@ void utf32_cp_collector(
     if (le) {
         while (i < n) {
             utf32_encode1_little(t, &cp);
-            collect(cp, 4, data, i);
+            collect(cp, data, i);
             t += 4;
             i++;
         }
     } else {
         while (i < n) {
             utf32_encode1_big(t, &cp);
-            collect(cp, 4, data, i);
+            collect(cp, data, i);
             t += 4;
             i++;
         }

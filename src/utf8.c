@@ -23,7 +23,7 @@ static_inline int utf8_is_continuation(const unsigned char c) {
 }
 
 
-static int utf8_codelen1(const unsigned char c) {
+static int utf8_charlen(const unsigned char c) {
     utf8_mask u;
     int i;
     for (i = 0; i < UTF8_MASKS_LEN; i++) {
@@ -33,6 +33,24 @@ static int utf8_codelen1(const unsigned char c) {
         }
     }
     return i < UTF8_MASKS_LEN? i + 1 : 0;
+}
+
+int utf8_codelen(int cp) {
+    int m = 0;
+    if (cp == 0) {
+        m = 0;
+    } else if (cp <= 0x7F) {
+        m = 1;
+    } else if (cp <= 0x7FF) {
+        m = 2;
+    } else if (cp <= 0xFFFF) {
+        m = 3;
+    } else if (cp <= 0x10FFFF) {
+        m = 4;
+    } else {
+        m = 0;
+    }
+    return m;
 }
 
 /*
@@ -46,7 +64,7 @@ long utf8_len(const unsigned char* s, long n) {
     const unsigned char* c;
 
     for (i = 0, c = s; i < n || (n == -1 && *c != '\0'); ) {
-        m = utf8_codelen1(*c);
+        m = utf8_charlen(*c);
         for (j = 1; j < m; j++) {
             if (!utf8_is_continuation(*(c + j))) {
                 m = 0;
@@ -69,7 +87,7 @@ long utf8_len(const unsigned char* s, long n) {
 int utf8_encode1(const unsigned char* s, int* cp) {
     const unsigned char* c;
     int m, i;
-    m = utf8_codelen1(*s);
+    m = utf8_charlen(*s);
     if (!m) {
         return 0;
     }
@@ -121,7 +139,7 @@ int utf8_decode1(int cp, unsigned char* s) {
             the forth arg is the iteration number
 @param data user data passed to [collect]
 */
-void utf8_cp_collector(const unsigned char* s, long n, void collect(int, int, void*, long), void* data) {
+void utf8_cp_collector(const unsigned char* s, long n, void collect(int, void*, long), void* data) {
     int cp = 0;
     int m;
     const unsigned char* t;
@@ -130,11 +148,10 @@ void utf8_cp_collector(const unsigned char* s, long n, void collect(int, int, vo
     i = 0;
     while (i < n) {
         m = utf8_encode1(t, &cp);
+        collect(cp, data, i);
         if (m) {
-            collect(cp, m, data, i);
             t = t + m;
         } else {
-            collect(0, 1, data, i);
             t++;
         }
         i++;
