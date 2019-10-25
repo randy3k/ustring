@@ -8,6 +8,8 @@ test_that("utf8 works for raw", {
     expect_equal(utf8_len(charToRaw("a𐐀𠍲")), 3)
     expect_equal(utf8_codelen(charToRaw("a𐐀𠍲")), c(1L, 4L, 4L))
     expect_equal(utf8_code(charToRaw("a𐐀𠍲")), c(97L, 66560L, 131954L))
+    # latin1 string as raw
+    expect_equal(utf8_code(charToRaw("fa\xE7ile"))[3], NA_integer_)
 })
 
 

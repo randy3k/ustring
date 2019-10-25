@@ -89,12 +89,14 @@ int utf8_encode1(const unsigned char* s, int* cp) {
     int m, i;
     m = utf8_charlen(*s);
     if (!m) {
+        *cp = 0;
         return 0;
     }
     utf8_mask u = utf8_masks[m - 1];
     int temp = *s & u.mask;
     for (c = s + 1, i = 1; i < m; c++, i++) {
         if (!utf8_is_continuation(*c)) {
+            *cp = 0;
             return 0;
         }
         temp = (temp << 6) + (*c & 0X3F);  // 0b00111111
