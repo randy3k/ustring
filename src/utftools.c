@@ -298,7 +298,7 @@ SEXP C_utf32_to_utf8(SEXP s_) {
     int bom = 0;
     const unsigned char* s = validate_utf32(s_, &bom, &le);
     size_t n = LENGTH(s_) - 4*bom;
-    utf_size_t k = utf16_nbytes(s, n, le);
+    utf_size_t k = utf32_nbytes(s, n, le);
     SEXP p = PROTECT(Rf_allocVector(STRSXP, 1));
     unsigned char* t;
     t = (unsigned char*) malloc(k.utf8 * sizeof(char));

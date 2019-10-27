@@ -15,7 +15,7 @@ int utf32_encode1_little(const unsigned char* s, uint32_t* cp) {
     uint32_t x = s[0] + s[1]*256 + s[2]*65536 + s[3]*16777216;
     if (x > 0x10FFFF) {
         m = 0;
-        *cp = -1;
+        x = -1;
     } else {
         m = 4;
     }
@@ -29,7 +29,7 @@ int utf32_encode1_big(const unsigned char* s, uint32_t* cp) {
     uint32_t x = s[3] + s[2]*256 + s[1]*65536 + s[0]*16777216;
     if (x > 0x10FFFF) {
         m = 0;
-        *cp = -1;
+        x = -1;
     } else {
         m = 4;
     }
