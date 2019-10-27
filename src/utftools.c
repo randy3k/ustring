@@ -165,58 +165,6 @@ SEXP C_utf32_length(SEXP s_) {
     return Rf_ScalarReal((double) k);
 }
 
-
-void utf8_code_callback(uint32_t cp, void* data, size_t i) {
-    int* pt = (int*) data;
-    pt[i] = cp == (uint32_t) -1 ? NA_INTEGER : cp;
-}
-
-SEXP C_code_point(SEXP s_) {
-    PROTECT(s_);
-    const unsigned char* s = validate_utf8(s_);;
-    size_t n = TYPEOF(s_) == STRSXP ? strlen((const char*) s) : LENGTH(s_);
-    size_t k = utf8_length(s, n);
-    SEXP p = PROTECT(Rf_allocVector(INTSXP, k));
-    int* pt = INTEGER(p);
-    utf8_cp_collector(s, n, utf8_code_callback, (void*) pt);
-    UNPROTECT(2);
-    return p;
-}
-
-void code_nbytes_callback(uint32_t cp, void* data, size_t i) {
-    SEXP p = (SEXP) data;
-    int m;
-    m = utf8_codelen(cp);
-    INTEGER(VECTOR_ELT(p, 0))[i] = m ? m : 1;;
-    m = utf16_codelen(cp);
-    INTEGER(VECTOR_ELT(p, 1))[i] = m ? m : 2;;
-    m = utf32_codelen(cp);
-    INTEGER(VECTOR_ELT(p, 2))[i] = m ? m : 4;;
-}
-
-SEXP C_code_nbytes(SEXP s_) {
-    PROTECT(s_);
-    const unsigned char* s = validate_utf8(s_);;
-    size_t n = TYPEOF(s_) == STRSXP ? strlen((const char*) s) : LENGTH(s_);
-    size_t k = utf8_length(s, n);
-    SEXP p = PROTECT(Rf_allocVector(VECSXP, 3));
-    SEXP names = PROTECT(Rf_allocVector(STRSXP, 3));
-    SET_STRING_ELT(names, 0, Rf_mkChar("utf8"));
-    SET_STRING_ELT(names, 1, Rf_mkChar("utf16"));
-    SET_STRING_ELT(names, 2, Rf_mkChar("utf32"));
-    Rf_setAttrib(p, R_NamesSymbol, names);
-    SEXP p8 = PROTECT(Rf_allocVector(INTSXP, k));
-    SEXP p16 = PROTECT(Rf_allocVector(INTSXP, k));
-    SEXP p32 = PROTECT(Rf_allocVector(INTSXP, k));
-    SET_VECTOR_ELT(p, 0, p8);
-    SET_VECTOR_ELT(p, 1, p16);
-    SET_VECTOR_ELT(p, 2, p32);
-    utf8_cp_collector(s, n, code_nbytes_callback, (void*) p);
-    UNPROTECT(6);
-    return p;
-}
-
-
 void utf8_to_utf16_little_callback(uint32_t cp, void* data, size_t i) {
     unsigned char** t = (unsigned char**) data;
     *t = *t + utf16_decode1_little(cp, *t);
@@ -326,16 +274,68 @@ SEXP C_utf32_to_utf8(SEXP s_) {
     return p;
 }
 
+
+void code_point_callback(uint32_t cp, void* data, size_t i) {
+    int* pt = (int*) data;
+    pt[i] = cp == (uint32_t) -1 ? NA_INTEGER : cp;
+}
+
+SEXP C_code_point(SEXP s_) {
+    PROTECT(s_);
+    const unsigned char* s = validate_utf8(s_);;
+    size_t n = TYPEOF(s_) == STRSXP ? strlen((const char*) s) : LENGTH(s_);
+    size_t k = utf8_length(s, n);
+    SEXP p = PROTECT(Rf_allocVector(INTSXP, k));
+    int* pt = INTEGER(p);
+    utf8_cp_collector(s, n, code_point_callback, (void*) pt);
+    UNPROTECT(2);
+    return p;
+}
+
+void code_nbytes_callback(uint32_t cp, void* data, size_t i) {
+    SEXP p = (SEXP) data;
+    int m;
+    m = utf8_codelen(cp);
+    INTEGER(VECTOR_ELT(p, 0))[i] = m ? m : 1;;
+    m = utf16_codelen(cp);
+    INTEGER(VECTOR_ELT(p, 1))[i] = m ? m : 2;;
+    m = utf32_codelen(cp);
+    INTEGER(VECTOR_ELT(p, 2))[i] = m ? m : 4;;
+}
+
+SEXP C_code_nbytes(SEXP s_) {
+    PROTECT(s_);
+    const unsigned char* s = validate_utf8(s_);;
+    size_t n = TYPEOF(s_) == STRSXP ? strlen((const char*) s) : LENGTH(s_);
+    size_t k = utf8_length(s, n);
+    SEXP p = PROTECT(Rf_allocVector(VECSXP, 3));
+    SEXP names = PROTECT(Rf_allocVector(STRSXP, 3));
+    SET_STRING_ELT(names, 0, Rf_mkChar("utf8"));
+    SET_STRING_ELT(names, 1, Rf_mkChar("utf16"));
+    SET_STRING_ELT(names, 2, Rf_mkChar("utf32"));
+    Rf_setAttrib(p, R_NamesSymbol, names);
+    SEXP p8 = PROTECT(Rf_allocVector(INTSXP, k));
+    SEXP p16 = PROTECT(Rf_allocVector(INTSXP, k));
+    SEXP p32 = PROTECT(Rf_allocVector(INTSXP, k));
+    SET_VECTOR_ELT(p, 0, p8);
+    SET_VECTOR_ELT(p, 1, p16);
+    SET_VECTOR_ELT(p, 2, p32);
+    utf8_cp_collector(s, n, code_nbytes_callback, (void*) p);
+    UNPROTECT(6);
+    return p;
+}
+
+
 static const R_CallMethodDef CallEntries[] = {
     {"C_utf8_length", (DL_FUNC) &C_utf8_length, 1},
     {"C_utf16_length", (DL_FUNC) &C_utf16_length, 1},
     {"C_utf32_length", (DL_FUNC) &C_utf32_length, 1},
-    {"C_code_nbytes", (DL_FUNC) &C_code_nbytes, 1},
-    {"C_code_point", (DL_FUNC) &C_code_point, 1},
     {"C_utf8_to_utf16", (DL_FUNC) &C_utf8_to_utf16, 2},
     {"C_utf16_to_utf8", (DL_FUNC) &C_utf16_to_utf8, 1},
     {"C_utf8_to_utf32", (DL_FUNC) &C_utf8_to_utf32, 2},
     {"C_utf32_to_utf8", (DL_FUNC) &C_utf32_to_utf8, 1},
+    {"C_code_nbytes", (DL_FUNC) &C_code_nbytes, 1},
+    {"C_code_point", (DL_FUNC) &C_code_point, 1},
     {NULL, NULL, 0}
 };
 
