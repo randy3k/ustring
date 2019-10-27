@@ -240,19 +240,14 @@ void utf16_to_utf8_callback(uint32_t cp, void* data, size_t i) {
 
 SEXP C_utf16_to_utf8(SEXP s_) {
     PROTECT(s_);
-    size_t k = 0;
     int le;
     int bom = 0;
     const unsigned char* s = validate_utf16(s_, &bom, &le);
     size_t n = LENGTH(s_) - bom * 2;
-    if (le) {
-        k = utf16_length_little(s, n);
-    } else {
-        k = utf16_length_big(s, n);
-    }
+    utf_size_t k = utf16_nbytes(s, n, le);
     SEXP p = PROTECT(Rf_allocVector(STRSXP, 1));
     unsigned char* t;
-    t = (unsigned char*) malloc(4 * k * sizeof(char));
+    t = (unsigned char*) malloc(k.utf8 * sizeof(char));
     unsigned char* w = t;
     utf16_cp_collector(s, n, utf16_to_utf8_callback, &w, le);
     w[0] = '\0';
@@ -299,15 +294,14 @@ void utf32_to_utf8_callback(uint32_t cp, void* data, size_t i) {
 
 SEXP C_utf32_to_utf8(SEXP s_) {
     PROTECT(s_);
-    size_t k = 0;
     int le;
     int bom = 0;
     const unsigned char* s = validate_utf32(s_, &bom, &le);
     size_t n = LENGTH(s_) - 4*bom;
-    k = LENGTH(s_)/4 - bom;
+    utf_size_t k = utf16_nbytes(s, n, le);
     SEXP p = PROTECT(Rf_allocVector(STRSXP, 1));
     unsigned char* t;
-    t = (unsigned char*) malloc(4 * k * sizeof(char));
+    t = (unsigned char*) malloc(k.utf8 * sizeof(char));
     unsigned char* w = t;
     utf32_cp_collector(s, n, utf32_to_utf8_callback, &w, le);
     w[0] = '\0';
