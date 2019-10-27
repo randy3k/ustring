@@ -2,6 +2,7 @@
 #define UTF32_H__
 
 #include <stddef.h>
+#include <stdint.h>
 
 #if !defined(static_inline)
 #if defined(_MSC_VER) || defined(__GNUC__)
@@ -12,14 +13,14 @@
 #endif
 
 
-int utf32_encode1_little(const unsigned char* s, int* cp);
-int utf32_encode1_big(const unsigned char* s, int* cp);
-int utf32_decode1_little(int cp, unsigned char* s);
-int utf32_decode1_big(int cp, unsigned char* s);
+int utf32_encode1_little(const unsigned char* s, uint32_t* cp);
+int utf32_encode1_big(const unsigned char* s, uint32_t* cp);
+int utf32_decode1_little(uint32_t cp, unsigned char* s);
+int utf32_decode1_big(uint32_t cp, unsigned char* s);
 
 void utf32_cp_collector(
-    const unsigned char* s, long n,
-    void collect(int, void*, long), void* data,
+    const unsigned char* s, size_t k,
+    void collect(uint32_t, void*, size_t), void* data,
     int le);
 
 #endif /* end of include guard: UTF32_H__ */

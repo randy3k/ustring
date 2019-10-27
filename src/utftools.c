@@ -3,6 +3,7 @@
 #include <R.h>
 #include <Rinternals.h>
 #include "utf8.h"
+#include "utf16.h"
 #include "utf32.h"
 
 
@@ -24,10 +25,11 @@ static int is_ascii(const unsigned char* s) {
     return 1;
 }
 
-static const unsigned char* validate_utf8(SEXP s_) {
+static const unsigned char* validate_utf8(SEXP s_, size_t* k) {
     const unsigned char* s;
+    size_t n = LENGTH(s_);
     if (TYPEOF(s_) == STRSXP ) {
-        if (LENGTH(s_) != 1) {
+        if (n != 1) {
             Rf_error("expect one-element character or UTF-8 raw string");
         }
         SEXP c = Rf_asChar(s_);
@@ -44,19 +46,70 @@ static const unsigned char* validate_utf8(SEXP s_) {
     } else {
         Rf_error("expect one-element character or UTF-8 raw string");
     }
+    if (TYPEOF(s_) == STRSXP) {
+        *k = utf8_len(s, -1);
+    } else {
+        *k = utf8_len(s, n);
+    }
+    return s;
+}
+
+static const unsigned char* validate_utf16(SEXP s_, size_t* k, int* le) {
+    int bom = 0;
+    size_t n = LENGTH(s_);
+    const unsigned char* s;
+    if (TYPEOF(s_) == RAWSXP) {
+        s = RAW(s_);
+    } else {
+        Rf_error("expect UTF-16 raw string");
+    }
+    SEXP le_ = Rf_getAttrib(s_, Rf_install("encoding"));
+    int known_endianness = 0;
+    if (n == 0) {
+        *le = 1;
+        known_endianness = 1;
+    } else if (le_ == R_NilValue) {
+        if (n > 4) {
+            if (s[0] == 0xFE && s[1] == 0xFF) {
+                *le = 0;
+                s += 2;
+                bom = 1;
+                known_endianness = 1;
+            } else if (s[0] == 0xFF && s[1] == 0xFE) {
+                *le = 1;
+                s += 2;
+                bom = 1;
+                known_endianness = 1;
+            }
+        }
+    } else if (strcmp(R_CHAR(Rf_asChar(le_)), "UTF-16LE") == 0) {
+        *le = 1;
+        known_endianness = 1;
+    } else if (strcmp(R_CHAR(Rf_asChar(le_)), "UTF-16BE") == 0) {
+        *le = 0;
+        known_endianness = 1;
+    } else {
+        Rf_error("expect UTF-16 raw string");
+    }
+    if (*le) {
+        *k = utf16_len_little(s, LENGTH(s_) - bom);
+    } else {
+        *k = utf16_len_big(s, LENGTH(s_) - bom);
+    }
+    if (!known_endianness) Rf_error("unknown endianness");
     return s;
 }
 
 
-static const unsigned char* validate_utf32(SEXP s_, long* m, int* le) {
+static const unsigned char* validate_utf32(SEXP s_, size_t* k, int* le) {
     const unsigned char* s;
+    size_t n = LENGTH(s_);
     if (TYPEOF(s_) == RAWSXP) {
         s = RAW(s_);
-        *m = LENGTH(s_) / 4;
+        *k = n / 4;
     } else {
         Rf_error("expect UTF-32 raw string");
     }
-    long n = LENGTH(s_);
     SEXP le_ = Rf_getAttrib(s_, Rf_install("encoding"));
     int known_endianness = 0;
     if (n == 0) {
@@ -67,12 +120,12 @@ static const unsigned char* validate_utf32(SEXP s_, long* m, int* le) {
             if (s[0] == 0 && s[1] == 0 && s[2] == 0xFE && s[3] == 0xFF) {
                 *le = 0;
                 s += 4;
-                *m = *m - 1;
+                *k = *k - 1;
                 known_endianness = 1;
             } else if (s[0] == 0xFF && s[1] == 0xFE && s[2] == 0 && s[3] == 0) {
                 *le = 1;
                 s += 4;
-                *m = *m - 1;
+                *k = *k - 1;
                 known_endianness = 1;
             }
         }
@@ -82,32 +135,24 @@ static const unsigned char* validate_utf32(SEXP s_, long* m, int* le) {
     } else if (strcmp(R_CHAR(Rf_asChar(le_)), "UTF-32BE") == 0) {
         *le = 0;
         known_endianness = 1;
+    } else {
+        Rf_error("expect UTF-32 raw string");
     }
     if (!known_endianness) Rf_error("unknown endianness");
     return s;
 }
 
 
-static_inline long utf8_len_(SEXP s_, const unsigned char* s) {
-    long n;
-    if (TYPEOF(s_) == STRSXP) {
-        n = utf8_len(s, -1);
-    } else {
-        n = utf8_len(s, LENGTH(s_));
-    }
-    return n;
-}
-
 SEXP C_utf8_len(SEXP s_) {
     PROTECT(s_);
-    const unsigned char* s = validate_utf8(s_);
-    long n = utf8_len_(s_, s);
+    size_t k;
+    validate_utf8(s_, &k);
     UNPROTECT(1);
-    return Rf_ScalarReal((double) n);
+    return Rf_ScalarReal((double) k);
 }
 
 
-void utf8_codelen_callback(int cp, void* data, long i) {
+void utf8_codelen_callback(uint32_t cp, void* data, size_t i) {
     int* pt = (int*) data;
     int m = utf8_codelen(cp);
     pt[i] = m ? m : 1;
@@ -115,54 +160,54 @@ void utf8_codelen_callback(int cp, void* data, long i) {
 
 SEXP C_utf8_codelen(SEXP s_) {
     PROTECT(s_);
-    const unsigned char* s = validate_utf8(s_);;
-    long n = utf8_len_(s_, s);
-    SEXP p = PROTECT(Rf_allocVector(INTSXP, n));
+    size_t k;
+    const unsigned char* s = validate_utf8(s_, &k);;
+    SEXP p = PROTECT(Rf_allocVector(INTSXP, k));
     int* pt = INTEGER(p);
-    utf8_cp_collector(s, n, utf8_codelen_callback, (void*) pt);
+    utf8_cp_collector(s, k, utf8_codelen_callback, (void*) pt);
     UNPROTECT(2);
     return p;
 }
 
 
-void utf8_code_callback(int cp, void* data, long i) {
+void utf8_code_callback(uint32_t cp, void* data, size_t i) {
     int* pt = (int*) data;
-    pt[i] = cp ? cp : NA_INTEGER;
+    pt[i] = cp == (uint32_t) -1 ? NA_INTEGER : cp;
 }
 
 SEXP C_utf8_code(SEXP s_) {
     PROTECT(s_);
-    const unsigned char* s = validate_utf8(s_);;
-    long n = utf8_len_(s_, s);
-    SEXP p = PROTECT(Rf_allocVector(INTSXP, n));
+    size_t k;
+    const unsigned char* s = validate_utf8(s_, &k);;
+    SEXP p = PROTECT(Rf_allocVector(INTSXP, k));
     int* pt = INTEGER(p);
-    utf8_cp_collector(s, n, utf8_code_callback, (void*) pt);
+    utf8_cp_collector(s, k, utf8_code_callback, (void*) pt);
     UNPROTECT(2);
     return p;
 }
 
-void utf8_to_utf32_little_callback(int cp, void* data, long i) {
+void utf8_to_utf16_little_callback(uint32_t cp, void* data, size_t i) {
     unsigned char** t = (unsigned char**) data;
-    *t = *t + utf32_decode1_little(cp, *t);
+    *t = *t + utf16_decode1_little(cp, *t);
 }
 
-void utf8_to_utf32_big_callback(int cp, void* data, long i) {
+void utf8_to_utf16_big_callback(uint32_t cp, void* data, size_t i) {
     unsigned char** t = (unsigned char**) data;
-    *t = *t + utf32_decode1_big(cp, *t);;
+    *t = *t + utf16_decode1_big(cp, *t);;
 }
 
-SEXP C_utf8_to_utf32(SEXP s_, SEXP endian) {
+SEXP C_utf8_to_utf16(SEXP s_, SEXP endian) {
     PROTECT(s_);
     char le = CHAR(Rf_asChar(endian))[0];
-    const unsigned char* s = validate_utf8(s_);;
-    long n = utf8_len_(s_, s);
-    SEXP p = PROTECT(Rf_allocVector(RAWSXP, 4 * n));
+    size_t k;
+    const unsigned char* s = validate_utf8(s_, &k);;
+    SEXP p = PROTECT(Rf_allocVector(RAWSXP, 4 * k));
     unsigned char* t = (unsigned char*) RAW(p);
     unsigned char* w = t;
     if (le == 'l') {
-        utf8_cp_collector(s, n, utf8_to_utf32_little_callback, &w);
+        utf8_cp_collector(s, k, utf8_to_utf16_little_callback, &w);
     } else {
-        utf8_cp_collector(s, n, utf8_to_utf32_big_callback, &w);
+        utf8_cp_collector(s, k, utf8_to_utf16_big_callback, &w);
     }
     SETLENGTH(p, w - t);
     UNPROTECT(2);
@@ -170,21 +215,73 @@ SEXP C_utf8_to_utf32(SEXP s_, SEXP endian) {
 }
 
 
-void utf32_to_utf8_callback(int cp, void* data, long i) {
+void utf16_to_utf8_callback(uint32_t cp, void* data, size_t i) {
+    unsigned char** t = (unsigned char**) data;
+    int m = utf8_decode1(cp, *t);
+    *t = *t + m;
+}
+
+SEXP C_utf16_to_utf8(SEXP s_) {
+    PROTECT(s_);
+    size_t k = 0;
+    int le;
+    const unsigned char* s = validate_utf16(s_, &k, &le);
+    SEXP p = PROTECT(Rf_allocVector(STRSXP, 1));
+    unsigned char* t;
+    t = (unsigned char*) malloc(4 * k * sizeof(char));
+    unsigned char* w = t;
+    utf16_cp_collector(s, k, utf16_to_utf8_callback, &w, le);
+    w[0] = '\0';
+    SET_STRING_ELT(p, 0, Rf_mkChar((const char*) t));
+    free(t);
+    UNPROTECT(2);
+    return p;
+}
+
+void utf8_to_utf32_little_callback(uint32_t cp, void* data, size_t i) {
+    unsigned char** t = (unsigned char**) data;
+    *t = *t + utf32_decode1_little(cp, *t);
+}
+
+void utf8_to_utf32_big_callback(uint32_t cp, void* data, size_t i) {
+    unsigned char** t = (unsigned char**) data;
+    *t = *t + utf32_decode1_big(cp, *t);;
+}
+
+SEXP C_utf8_to_utf32(SEXP s_, SEXP endian) {
+    PROTECT(s_);
+    char le = CHAR(Rf_asChar(endian))[0];
+    size_t k;
+    const unsigned char* s = validate_utf8(s_, &k);;
+    SEXP p = PROTECT(Rf_allocVector(RAWSXP, 4 * k));
+    unsigned char* t = (unsigned char*) RAW(p);
+    unsigned char* w = t;
+    if (le == 'l') {
+        utf8_cp_collector(s, k, utf8_to_utf32_little_callback, &w);
+    } else {
+        utf8_cp_collector(s, k, utf8_to_utf32_big_callback, &w);
+    }
+    SETLENGTH(p, w - t);
+    UNPROTECT(2);
+    return p;
+}
+
+
+void utf32_to_utf8_callback(uint32_t cp, void* data, size_t i) {
     unsigned char** t = (unsigned char**) data;
     *t = *t + utf8_decode1(cp, *t);
 }
 
 SEXP C_utf32_to_utf8(SEXP s_) {
     PROTECT(s_);
-    long m = 0;
+    size_t k = 0;
     int le;
-    const unsigned char* s = validate_utf32(s_, &m, &le);
+    const unsigned char* s = validate_utf32(s_, &k, &le);
     SEXP p = PROTECT(Rf_allocVector(STRSXP, 1));
     unsigned char* t;
-    t = (unsigned char*) malloc(4 * m * sizeof(char));
+    t = (unsigned char*) malloc(4 * k * sizeof(char));
     unsigned char* w = t;
-    utf32_cp_collector(s, m, utf32_to_utf8_callback, &w, le);
+    utf32_cp_collector(s, k, utf32_to_utf8_callback, &w, le);
     w[0] = '\0';
     SET_STRING_ELT(p, 0, Rf_mkChar((const char*) t));
     free(t);
@@ -196,6 +293,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_utf8_len", (DL_FUNC) &C_utf8_len, 1},
     {"C_utf8_codelen", (DL_FUNC) &C_utf8_codelen, 1},
     {"C_utf8_code", (DL_FUNC) &C_utf8_code, 1},
+    {"C_utf8_to_utf16", (DL_FUNC) &C_utf8_to_utf16, 2},
+    {"C_utf16_to_utf8", (DL_FUNC) &C_utf16_to_utf8, 1},
     {"C_utf8_to_utf32", (DL_FUNC) &C_utf8_to_utf32, 2},
     {"C_utf32_to_utf8", (DL_FUNC) &C_utf32_to_utf8, 1},
     {NULL, NULL, 0}

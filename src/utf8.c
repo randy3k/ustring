@@ -35,11 +35,9 @@ static int utf8_charlen(const unsigned char c) {
     return i < UTF8_MASKS_LEN? i + 1 : 0;
 }
 
-int utf8_codelen(int cp) {
+int utf8_codelen(uint32_t cp) {
     int m = 0;
-    if (cp == 0) {
-        m = 0;
-    } else if (cp <= 0x7F) {
+    if (0 <= cp && cp <= 0x7F) {
         m = 1;
     } else if (cp <= 0x7FF) {
         m = 2;
@@ -53,17 +51,12 @@ int utf8_codelen(int cp) {
     return m;
 }
 
-/*
-@param s utf8 string
-@param n the length of the string (as strlen) or -1 when it is unknown but the string is null terminated
-*/
-long utf8_len(const unsigned char* s, long n) {
-    int k = 0;
+size_t utf8_len(const unsigned char* s, size_t n) {
+    size_t k = 0;
     int m, j;
-    long i;
+    size_t i;
     const unsigned char* c;
-
-    for (i = 0, c = s; i < n || (n == -1 && *c != '\0'); ) {
+    for (i = 0, c = s; (i < n && n < (size_t) -1) || (n == (size_t) -1 && *c != '\0'); ) {
         m = utf8_charlen(*c);
         for (j = 1; j < m; j++) {
             if (!utf8_is_continuation(*(c + j))) {
@@ -84,20 +77,21 @@ long utf8_len(const unsigned char* s, long n) {
 }
 
 
-int utf8_encode1(const unsigned char* s, int* cp) {
+int utf8_encode1(const unsigned char* s, uint32_t* cp) {
     const unsigned char* c;
     int m, i;
     m = utf8_charlen(*s);
     if (!m) {
-        *cp = 0;
+        *cp = -1;
         return 0;
     }
     utf8_mask u = utf8_masks[m - 1];
     int temp = *s & u.mask;
     for (c = s + 1, i = 1; i < m; c++, i++) {
         if (!utf8_is_continuation(*c)) {
-            *cp = 0;
-            return 0;
+            temp = -1;
+            m = 0;
+            break;
         }
         temp = (temp << 6) + (*c & 0X3F);  // 0b00111111
     }
@@ -106,9 +100,9 @@ int utf8_encode1(const unsigned char* s, int* cp) {
 }
 
 
-int utf8_decode1(int cp, unsigned char* s) {
+int utf8_decode1(uint32_t cp, unsigned char* s) {
     int m = 0;
-    if (0 < cp && cp <= 0x7F) {
+    if (0 <= cp && cp <= 0x7F) {
         s[0] = cp;
         m = 1;
     } else if (cp <= 0x7FF) {
@@ -130,32 +124,16 @@ int utf8_decode1(int cp, unsigned char* s) {
     return m;
 }
 
-
-/*
-@param s UTF-8 string
-@param n number of code points in the string as returned by [utf8_len]
-@param collect a callback function,
-            the first arg is the code point,
-            the second arg is the number of code unit
-            the third arg is the user data
-            the forth arg is the iteration number
-@param data user data passed to [collect]
-*/
-void utf8_cp_collector(const unsigned char* s, long n, void collect(int, void*, long), void* data) {
-    int cp = 0;
+void utf8_cp_collector(const unsigned char* s, size_t k, void collect(uint32_t, void*, size_t), void* data) {
+    uint32_t cp = -1;
     int m;
-    const unsigned char* t;
+    const unsigned char* t = s;
     int i;
-    t = s;
     i = 0;
-    while (i < n) {
+    while (i < k) {
         m = utf8_encode1(t, &cp);
         collect(cp, data, i);
-        if (m) {
-            t = t + m;
-        } else {
-            t++;
-        }
+        t += m ? m : 1;
         i++;
     }
 }
