@@ -51,7 +51,7 @@ int utf8_codelen(uint32_t cp) {
     return m;
 }
 
-size_t utf8_len(const unsigned char* s, size_t n) {
+size_t utf8_length(const unsigned char* s, size_t n) {
     size_t k = 0;
     int m, j;
     size_t i;
@@ -64,7 +64,7 @@ size_t utf8_len(const unsigned char* s, size_t n) {
                 break;
             }
         }
-        if (m > 0) {
+        if (m) {
             c += m;
             i += m;
         } else {
@@ -124,16 +124,22 @@ int utf8_decode1(uint32_t cp, unsigned char* s) {
     return m;
 }
 
-void utf8_cp_collector(const unsigned char* s, size_t k, void collect(uint32_t, void*, size_t), void* data) {
+void utf8_cp_collector(const unsigned char* s, size_t n, void collect(uint32_t, void*, size_t), void* data) {
     uint32_t cp = -1;
     int m;
-    const unsigned char* t = s;
-    int i;
-    i = 0;
-    while (i < k) {
-        m = utf8_encode1(t, &cp);
-        collect(cp, data, i);
-        t += m ? m : 1;
-        i++;
+    const unsigned char* c = s;
+    size_t i = 0;
+    size_t j = 0;
+    while (i < n) {
+        m = utf8_encode1(c, &cp);
+        collect(cp, data, j);
+        if (m) {
+            c += m;
+            i += m;
+        } else {
+            c++;
+            i++;
+        }
+        j++;
     }
 }

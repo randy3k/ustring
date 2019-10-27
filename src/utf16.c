@@ -2,7 +2,7 @@
 #include "utf16.h"
 
 
-size_t utf16_len_little(const unsigned char* s, size_t n) {
+size_t utf16_length_little(const unsigned char* s, size_t n) {
     size_t k = 0;
     const unsigned char* c = s;
     size_t i;
@@ -36,7 +36,7 @@ size_t utf16_len_little(const unsigned char* s, size_t n) {
     return k;
 }
 
-size_t utf16_len_big(const unsigned char* s, size_t n) {
+size_t utf16_length_big(const unsigned char* s, size_t n) {
     size_t k = 0;
     const unsigned char* c = s;
     size_t i;
@@ -165,27 +165,39 @@ int utf16_decode1_big(uint32_t cp, unsigned char* s) {
 
 
 void utf16_cp_collector(
-            const unsigned char* s, size_t k,
+            const unsigned char* s, size_t n,
             void collect(uint32_t, void*, size_t), void* data,
             int le) {
     uint32_t cp = -1;
     int m;
-    const unsigned char* t = s;
-    int i;
-    i = 0;
+    const unsigned char* c = s;
+    size_t i = 0;
+    size_t j = 0;
     if (le) {
-        while (i < k) {
-            m = utf16_encode1_little(t, &cp);
-            collect(cp, data, i);
-            t += m ? m : 2;
-            i++;
+        while (i < n) {
+            m = utf16_encode1_little(c, &cp);
+            collect(cp, data, j);
+            if (m) {
+                c += m;
+                i += m;
+            } else {
+                c += 2;
+                i += 2;
+            }
+            j++;
         }
     } else {
-        while (i < k) {
-            m = utf16_encode1_big(t, &cp);
-            collect(cp, data, i);
-            t += m ? m : 2;
-            i++;
+        while (i < n) {
+            m = utf16_encode1_big(c, &cp);
+            collect(cp, data, j);
+            if (m) {
+                c += m;
+                i += m;
+            } else {
+                c += 2;
+                i += 2;
+            }
+            j++;
         }
     }
 }

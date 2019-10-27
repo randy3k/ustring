@@ -55,26 +55,28 @@ int utf32_decode1_big(uint32_t cp, unsigned char* s) {
 
 
 void utf32_cp_collector(
-            const unsigned char* s, size_t k,
+            const unsigned char* s, size_t n,
             void collect(uint32_t, void*, size_t), void* data,
             int le) {
     uint32_t cp = -1;
-    const unsigned char* t = s;
-    int i;
-    i = 0;
+    const unsigned char* c = s;
+    size_t i = 0;
+    size_t j = 0;
     if (le) {
-        while (i < k) {
-            utf32_encode1_little(t, &cp);
-            collect(cp, data, i);
-            t += 4;
-            i++;
+        while (i < n) {
+            utf32_encode1_little(c, &cp);
+            collect(cp, data, j);
+            c += 4;
+            i += 4;
+            j++;
         }
     } else {
-        while (i < k) {
-            utf32_encode1_big(t, &cp);
-            collect(cp, data, i);
-            t += 4;
-            i++;
+        while (i < n) {
+            utf32_encode1_big(c, &cp);
+            collect(cp, data, j);
+            c += 4;
+            i += 4;
+            j++;
         }
     }
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utftools.R
 \name{utf8_codelen}
 \alias{utf8_codelen}
-\title{Calcuate code point lenghts of each char in a UTF-8 encoded text.}
+\title{Calcuate code point lengths of each char in a UTF-8 encoded text.}
 \usage{
 utf8_codelen(text)
 }
@@ -10,5 +10,5 @@ utf8_codelen(text)
 \item{text}{a scalar character}
 }
 \description{
-Calcuate code point lenghts of each char in a UTF-8 encoded text.
+Calcuate code point lengths of each char in a UTF-8 encoded text.
 }

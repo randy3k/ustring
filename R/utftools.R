@@ -6,25 +6,25 @@
 #' Calcuate the number of code points of a UTF-8 encoded text.
 #' @param text a scalar character
 #' @export
-utf8_len <- function(text) {
-    .Call(C_utf8_len, text)
+utf8_length <- function(text) {
+    .Call(C_utf8_length, text)
 }
 
 #' Calcuate the number of code points of a UTF-16 raw string.
 #' @param text a UTF-16 raw string
 #' @export
-utf16_len <- function(text) {
-    .Call(C_utf16_len, text)
+utf16_length <- function(text) {
+    .Call(C_utf16_length, text)
 }
 
 #' Calcuate the number of code points of a UTF-32 raw string.
 #' @param text a UTF-32 raw string
 #' @export
-utf32_len <- function(text) {
-    .Call(C_utf32_len, text)
+utf32_length <- function(text) {
+    .Call(C_utf32_length, text)
 }
 
-#' Calcuate code point lenghts of each char in a UTF-8 encoded text.
+#' Calcuate code point lengths of each char in a UTF-8 encoded text.
 #' @param text a scalar character
 #' @export
 utf8_codelen <- function(text) {
