@@ -5,6 +5,7 @@
 #include "utf8.h"
 #include "utf16.h"
 #include "utf32.h"
+#include "utf_nbytes.h"
 
 
 #if !defined(static_inline)
@@ -165,25 +166,6 @@ SEXP C_utf32_length(SEXP s_) {
 }
 
 
-void utf8_codelen_callback(uint32_t cp, void* data, size_t i) {
-    int* pt = (int*) data;
-    int m = utf8_codelen(cp);
-    pt[i] = m ? m : 1;
-}
-
-SEXP C_utf8_codelen(SEXP s_) {
-    PROTECT(s_);
-    const unsigned char* s = validate_utf8(s_);;
-    size_t n = TYPEOF(s_) == STRSXP ? strlen((const char*) s) : LENGTH(s_);
-    size_t k = utf8_length(s, n);
-    SEXP p = PROTECT(Rf_allocVector(INTSXP, k));
-    int* pt = INTEGER(p);
-    utf8_cp_collector(s, n, utf8_codelen_callback, (void*) pt);
-    UNPROTECT(2);
-    return p;
-}
-
-
 void utf8_code_callback(uint32_t cp, void* data, size_t i) {
     int* pt = (int*) data;
     pt[i] = cp == (uint32_t) -1 ? NA_INTEGER : cp;
@@ -201,6 +183,25 @@ SEXP C_utf8_code(SEXP s_) {
     return p;
 }
 
+void utf8_code_nbytes_callback(uint32_t cp, void* data, size_t i) {
+    int* pt = (int*) data;
+    int m = utf8_codelen(cp);
+    pt[i] = m ? m : 1;
+}
+
+SEXP C_utf8_code_nbytes(SEXP s_) {
+    PROTECT(s_);
+    const unsigned char* s = validate_utf8(s_);;
+    size_t n = TYPEOF(s_) == STRSXP ? strlen((const char*) s) : LENGTH(s_);
+    size_t k = utf8_length(s, n);
+    SEXP p = PROTECT(Rf_allocVector(INTSXP, k));
+    int* pt = INTEGER(p);
+    utf8_cp_collector(s, n, utf8_code_nbytes_callback, (void*) pt);
+    UNPROTECT(2);
+    return p;
+}
+
+
 void utf8_to_utf16_little_callback(uint32_t cp, void* data, size_t i) {
     unsigned char** t = (unsigned char**) data;
     *t = *t + utf16_decode1_little(cp, *t);
@@ -216,8 +217,8 @@ SEXP C_utf8_to_utf16(SEXP s_, SEXP endian) {
     char le = CHAR(Rf_asChar(endian))[0];
     const unsigned char* s = validate_utf8(s_);
     size_t n = TYPEOF(s_) == STRSXP ? strlen((const char*) s) : LENGTH(s_);
-    size_t k = utf8_length(s, n);
-    SEXP p = PROTECT(Rf_allocVector(RAWSXP, 4 * k));
+    utf_size_t k = utf8_nbytes(s, n);
+    SEXP p = PROTECT(Rf_allocVector(RAWSXP, k.utf16));
     unsigned char* t = (unsigned char*) RAW(p);
     unsigned char* w = t;
     if (le == 'b') {
@@ -320,7 +321,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_utf8_length", (DL_FUNC) &C_utf8_length, 1},
     {"C_utf16_length", (DL_FUNC) &C_utf16_length, 1},
     {"C_utf32_length", (DL_FUNC) &C_utf32_length, 1},
-    {"C_utf8_codelen", (DL_FUNC) &C_utf8_codelen, 1},
+    {"C_utf8_code_nbytes", (DL_FUNC) &C_utf8_code_nbytes, 1},
     {"C_utf8_code", (DL_FUNC) &C_utf8_code, 1},
     {"C_utf8_to_utf16", (DL_FUNC) &C_utf8_to_utf16, 2},
     {"C_utf16_to_utf8", (DL_FUNC) &C_utf16_to_utf8, 1},

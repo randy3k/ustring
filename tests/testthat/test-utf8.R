@@ -1,12 +1,12 @@
 test_that("utf8 works for string", {
     expect_equal(utf8_length("a𐐀𠍲"), 3)
-    expect_equal(utf8_codelen("a𐐀𠍲"), c(1L, 4L, 4L))
+    expect_equal(utf8_code_nbytes("a𐐀𠍲"), c(1L, 4L, 4L))
     expect_equal(utf8_code("a𐐀𠍲"), c(97L, 66560L, 131954L))
 })
 
 test_that("utf8 works for raw", {
     expect_equal(utf8_length(charToRaw("a𐐀𠍲")), 3)
-    expect_equal(utf8_codelen(charToRaw("a𐐀𠍲")), c(1L, 4L, 4L))
+    expect_equal(utf8_code_nbytes(charToRaw("a𐐀𠍲")), c(1L, 4L, 4L))
     expect_equal(utf8_code(charToRaw("a𐐀𠍲")), c(97L, 66560L, 131954L))
     # latin1 string as raw
     expect_equal(utf8_code(charToRaw("fa\xE7ile"))[3], NA_integer_)

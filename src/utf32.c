@@ -2,6 +2,14 @@
 #include "utf32.h"
 
 
+int utf32_codelen(uint32_t cp) {
+    if (cp <= 0x10FFFF) {
+        return 4;
+    } else {
+        return 0;
+    }
+}
+
 int utf32_encode1_little(const unsigned char* s, uint32_t* cp) {
     int m;
     uint32_t x = s[0] + s[1]*256 + s[2]*65536 + s[3]*16777216;

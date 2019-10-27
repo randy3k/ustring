@@ -24,20 +24,20 @@ utf32_length <- function(text) {
     .Call(C_utf32_length, text)
 }
 
-#' Calcuate code point lengths of each char in a UTF-8 encoded text.
-#' @param text a scalar character
-#' @export
-utf8_codelen <- function(text) {
-    .Call(C_utf8_codelen, text)
-}
-
-
-#' Get the unicode code point for each char in a UTF-8 encoded text.
+#' Get the unicode code for each code point in a UTF-8 encoded text.
 #' @param text a scalar character
 #' @export
 #' @export
 utf8_code <- function(text) {
     .Call(C_utf8_code, text)
+}
+
+
+#' Calcuate number of bytes of each code point in a UTF-8 encoded text.
+#' @param text a scalar character
+#' @export
+utf8_code_nbytes <- function(text) {
+    .Call(C_utf8_code_nbytes, text)
 }
 
 

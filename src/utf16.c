@@ -2,6 +2,16 @@
 #include "utf16.h"
 
 
+int utf16_codelen(uint32_t cp) {
+    int m = 0;
+    if ((0 <= cp && cp <= 0xD7FF) || (cp >= 0xE000 && cp <= 0xFFFF)) {
+        m = 2;
+    } else if (cp >= 0x10000 && cp <= 0x10FFFF) {
+        m = 4;
+    }
+    return m;
+}
+
 size_t utf16_length_little(const unsigned char* s, size_t n) {
     size_t k = 0;
     const unsigned char* c = s;

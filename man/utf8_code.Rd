@@ -2,7 +2,7 @@
 % Please edit documentation in R/utftools.R
 \name{utf8_code}
 \alias{utf8_code}
-\title{Get the unicode code point for each char in a UTF-8 encoded text.}
+\title{Get the unicode code for each code point in a UTF-8 encoded text.}
 \usage{
 utf8_code(text)
 }
@@ -10,5 +10,5 @@ utf8_code(text)
 \item{text}{a scalar character}
 }
 \description{
-Get the unicode code point for each char in a UTF-8 encoded text.
+Get the unicode code for each code point in a UTF-8 encoded text.
 }
