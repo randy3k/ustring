@@ -28,16 +28,16 @@ utf32_length <- function(text) {
 #' @param text a scalar character
 #' @export
 #' @export
-utf8_code <- function(text) {
-    .Call(C_utf8_code, text)
+code_point <- function(text) {
+    .Call(C_code_point, text)
 }
 
 
 #' Calcuate number of bytes of each code point in a UTF-8 encoded text.
 #' @param text a scalar character
 #' @export
-utf8_code_nbytes <- function(text) {
-    .Call(C_utf8_code_nbytes, text)
+code_nbytes <- function(text) {
+    .Call(C_code_nbytes, text)
 }
 
 

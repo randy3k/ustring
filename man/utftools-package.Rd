@@ -4,11 +4,11 @@
 \name{utftools-package}
 \alias{utftools}
 \alias{utftools-package}
-\title{utftools: What the Package Does (One Line, Title Case)}
+\title{utftools: Some Unicode Tools}
 \description{
 What the package does (one paragraph).
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (YOUR-ORCID-ID)
+\strong{Maintainer}: Randy Lai \email{randy.cs.lai@gmail.com}
 
 }
