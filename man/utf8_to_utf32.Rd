@@ -4,7 +4,7 @@
 \alias{utf8_to_utf32}
 \title{Convert a UTF-8 string to UTF-32 raw string.}
 \usage{
-utf8_to_utf32(text, endian = c("little", "big"))
+utf8_to_utf32(text, endian = "little")
 }
 \arguments{
 \item{text}{a scalar character}

@@ -55,8 +55,8 @@ size_t utf8_len(const unsigned char* s, size_t n) {
     size_t k = 0;
     int m, j;
     size_t i;
-    const unsigned char* c;
-    for (i = 0, c = s; (i < n && n < (size_t) -1) || (n == (size_t) -1 && *c != '\0'); ) {
+    const unsigned char* c = s;
+    for (i = 0; i < n; ) {
         m = utf8_charlen(*c);
         for (j = 1; j < m; j++) {
             if (!utf8_is_continuation(*(c + j))) {

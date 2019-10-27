@@ -41,3 +41,34 @@ test_that("utf32_to_utf8 on string works", {
     s_utf32 <- iconv(s, from = "UTF-8", to = "UTF-32", toRaw = TRUE)[[1]]
     expect_equal(utf32_to_utf8(s_utf32), s)
 })
+
+
+
+test_that("utf8_to_utf16 on string works", {
+    s <- "a𐐀𠍲"
+    s_utf16 <- utf8_to_utf16(s)
+    expect_equal(length(s_utf16), 10)
+    expect_equal(s_utf16[1:2], as.raw(c(97, 0)))
+    expect_equal(s_utf16[3:6], as.raw(c(1, 216, 0, 220)))
+    expect_equal(s_utf16[7:10], as.raw(c(64, 216, 114, 223)))
+
+    s <- "a𐐀𠍲"
+    s_utf16 <- utf8_to_utf16(s, endian = "big")
+    expect_equal(length(s_utf16), 10)
+    expect_equal(s_utf16[1:2], as.raw(c(0, 97)))
+    expect_equal(s_utf16[3:6], as.raw(c(216, 1, 220, 0)))
+    expect_equal(s_utf16[7:10], as.raw(c(216, 64, 223, 114)))
+})
+
+
+test_that("utf16_to_utf8 on string works", {
+    s <- "a𐐀𠍲"
+    s_utf16 <- utf8_to_utf16(s)
+    expect_equal(utf16_to_utf8(s_utf16), s)
+
+    s_utf16 <- utf8_to_utf16(s, endian = "big")
+    expect_equal(utf16_to_utf8(s_utf16), s)
+
+    s_utf16 <- iconv(s, from = "UTF-8", to = "UTF-16", toRaw = TRUE)[[1]]
+    expect_equal(utf16_to_utf8(s_utf16), s)
+})
