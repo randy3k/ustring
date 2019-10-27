@@ -1,12 +1,11 @@
 Package: utftools
-Title: What the Package Does (One Line, Title Case)
+Title: Some Unicode Tools
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Randy",
+           family = "Lai",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           email = "randy.cs.lai@gmail.com")
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
