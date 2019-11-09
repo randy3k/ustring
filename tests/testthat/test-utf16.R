@@ -7,7 +7,7 @@ test_that("utf16 works", {
 
 
 test_that("utf16_to_text works", {
-    s <- "a𐐀𠍲"
+    s <- "a𐐀𝜺"
     s_utf16 <- utf8_to_utf16(s)
     expect_equal(utf16_to_text(s_utf16), s)
 
@@ -20,7 +20,7 @@ test_that("utf16_to_text works", {
 
 
 test_that("utf16_to_utf8 works", {
-    s <- "a𐐀𠍲"
+    s <- "a𐐀𝜺"
     s_utf16 <- utf8_to_utf16(s)
     expect_equal(utf16_to_utf8(s_utf16), as.utfstring(s))
 

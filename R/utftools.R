@@ -3,19 +3,18 @@
 "_PACKAGE"
 
 
-
 #' Calculate the number of code points
 #' @param x a scalar character or utfstring
 #' @export
 ncodept <- function(x) {
     if (is.character(x)) {
         return(.Call(C_utf8_ncodept, x))
-    } else if (is.raw(x)) {
+    }
+    if (is.raw(x)) {
         encoding <- attr(x, "encoding")
         if (is.null(encoding) || startsWith(encoding, "UTF-8")) {
             return(.Call(C_utf8_ncodept, x))
-        }
-        else if (startsWith(encoding, "UTF-16")) {
+        } else if (startsWith(encoding, "UTF-16")) {
             return(.Call(C_utf16_ncodept, x))
         } else if (startsWith(encoding, "UTF-32")) {
             return(.Call(C_utf32_ncodept, x))
@@ -35,8 +34,7 @@ codept <- function(x) {
         encoding <- attr(x, "encoding")
         if (is.null(encoding) || startsWith(encoding, "UTF-8")) {
             return(.Call(C_utf8_codept, x))
-        }
-        else if (startsWith(encoding, "UTF-16")) {
+        } else if (startsWith(encoding, "UTF-16")) {
             return(.Call(C_utf16_codept, x))
         } else if (startsWith(encoding, "UTF-32")) {
             return(.Call(C_utf32_codept, x))
@@ -55,7 +53,7 @@ codept <- function(x) {
 
 
 #' Convert a UTF-8 string to UTF-16 utfstring.
-#' @param text a scalar character
+#' @param text a scalar character or UTF-8 utfstring
 #' @param endian little endian or big endian?
 #' @export
 utf8_to_utf16 <- function(text, endian = "little") {
@@ -66,7 +64,7 @@ utf8_to_utf16 <- function(text, endian = "little") {
 }
 
 
-#' Convert a UTF-16 utfstring to UTF-8 string.
+#' Convert a UTF-16 utfstring to UTF-8 utfstring.
 #' @param s a UTF-16 utfstring
 #' @export
 utf16_to_utf8 <- function(s) {
@@ -76,7 +74,7 @@ utf16_to_utf8 <- function(s) {
     s
 }
 
-#' Convert a UTF-16 utfstring to UTF-8 string.
+#' Convert a UTF-16 utfstring to UTF-8 text.
 #' @param s a UTF-16 utfstring
 #' @export
 utf16_to_text <- function(s) {
@@ -87,7 +85,7 @@ utf16_to_text <- function(s) {
 
 
 #' Convert a UTF-8 string to UTF-32 utfstring.
-#' @param text a scalar character
+#' @param text a scalar character or UTF-8 utfstring
 #' @param endian little endian or big endian?
 #' @export
 utf8_to_utf32 <- function(text, endian = "little") {
@@ -98,7 +96,7 @@ utf8_to_utf32 <- function(text, endian = "little") {
 }
 
 
-#' Convert a UTF-32 utfstring to UTF-8 string.
+#' Convert a UTF-32 utfstring to UTF-8 utfstring.
 #' @param s a UTF-32 utfstring
 #' @export
 utf32_to_utf8 <- function(s) {
@@ -108,7 +106,7 @@ utf32_to_utf8 <- function(s) {
     s
 }
 
-#' Convert a UTF-32 utfstring to UTF-8 string.
+#' Convert a UTF-32 utfstring to UTF-8 text.
 #' @param s a UTF-32 utfstring
 #' @export
 utf32_to_text <- function(s) {
@@ -119,7 +117,7 @@ utf32_to_text <- function(s) {
 
 
 #' @export
-print.utfstring <- function(x) {
+print.utfstring <- function(x, ...) {
     encoding <- attr(x, "encoding")
     cat(encoding, ": ", sep = "")
     cat(x)

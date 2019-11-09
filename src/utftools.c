@@ -64,7 +64,7 @@ static const unsigned char* validate_utf16(SEXP s_, int* bom, int* le) {
         *le = 1;
         known_endianness = 1;
     } else if (le_ == R_NilValue) {
-        if (n > 4) {
+        if (n > 2) {
             if (s[0] == 0xFE && s[1] == 0xFF) {
                 *le = 0;
                 s += 2;

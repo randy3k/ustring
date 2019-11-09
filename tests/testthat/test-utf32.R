@@ -7,7 +7,7 @@ test_that("utf32 works", {
 
 
 test_that("utf32_to_text works", {
-    s <- "a𐐀𠍲"
+    s <- "a𐐀𝜺"
     s_utf32 <- utf8_to_utf32(s)
     expect_equal(utf32_to_text(s_utf32), s)
 
