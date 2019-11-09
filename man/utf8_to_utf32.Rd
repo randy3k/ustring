@@ -2,7 +2,7 @@
 % Please edit documentation in R/utftools.R
 \name{utf8_to_utf32}
 \alias{utf8_to_utf32}
-\title{Convert a UTF-8 string to UTF-32 raw string.}
+\title{Convert a UTF-8 string to UTF-32 utfstring.}
 \usage{
 utf8_to_utf32(text, endian = "little")
 }
@@ -12,5 +12,5 @@ utf8_to_utf32(text, endian = "little")
 \item{endian}{little endian or big endian?}
 }
 \description{
-Convert a UTF-8 string to UTF-32 raw string.
+Convert a UTF-8 string to UTF-32 utfstring.
 }
