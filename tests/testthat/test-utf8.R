@@ -53,6 +53,7 @@ test_that("utf8_to_utf32 on string works", {
     expect_equal(s_utf32[1:4], as.raw(c(97, 0, 0, 0)))
     expect_equal(s_utf32[5:8], as.raw(c(0, 4, 1, 0)))
     expect_equal(s_utf32[9:12], as.raw(c(58, 215, 1, 0)))
+    expect_equal(as.utfstring(s, "UTF-32LE"), s_utf32)
 
     s <- "a𐐀𝜺"
     s_utf32 <- utf8_to_utf32(s, endian = "big")
@@ -60,6 +61,7 @@ test_that("utf8_to_utf32 on string works", {
     expect_equal(s_utf32[1:4], rev(as.raw(c(97, 0, 0, 0))))
     expect_equal(s_utf32[5:8], rev(as.raw(c(0, 4, 1, 0))))
     expect_equal(s_utf32[9:12], rev(as.raw(c(58, 215, 1, 0))))
+    expect_equal(as.utfstring(s, "UTF-32BE"), s_utf32)
 })
 
 

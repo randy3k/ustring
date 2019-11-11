@@ -128,15 +128,42 @@ print.utfstring <- function(x, ...) {
 #' Convert a scaler character to utfstring
 #' @export
 #' @param x a scalar character
-as.utfstring <- function(x) {
+#' @param encoding a scalar character
+as.utfstring <- function(x, encoding) {
     if (inherits(x, "utfstring")) {
-        x
+        if (!missing(encoding) && attr(x, "encoding") != encoding) {
+            stop("incompatible encoding")
+        }
+        return(x)
     } else if (is.character(x)) {
-        x <- charToRaw(enc2utf8(x))
-        attr(x, "encoding") <- "UTF-8"
-        class(x) <- "utfstring"
-        x
-    } else {
-        stop("unsupported type")
+        if (missing(encoding) || encoding == "UTF-8") {
+            x <- charToRaw(enc2utf8(x))
+            attr(x, "encoding") <- "UTF-8"
+            class(x) <- "utfstring"
+            return(x)
+        } else if (startsWith(encoding, "UTF-16")) {
+            if (encoding == "UTF-16BE") {
+                endian <- "big"
+            } else if (encoding == "UTF-16LE") {
+                endian <- "little"
+            } else if (encoding == "UTF-16") {
+                stop("require endianess: 'UTF-16BE' or 'UTF-16LE'")
+            } else {
+                stop("unsupported type")
+            }
+            return(utf8_to_utf16(x, endian = endian))
+        } else if (startsWith(encoding, "UTF-32")) {
+            if (encoding == "UTF-32BE") {
+                endian <- "big"
+            } else if (encoding == "UTF-32LE") {
+                endian <- "little"
+            } else if (encoding == "UTF-32") {
+                stop("require endianess: 'UTF-32BE' or 'UTF-32LE'")
+            } else {
+                stop("unsupported type")
+            }
+            return(utf8_to_utf32(x, endian = endian))
+        }
     }
+    stop("unsupported type")
 }
