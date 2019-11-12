@@ -44,6 +44,16 @@ codept <- function(x) {
 }
 
 
+#' Show the encoding of a utfstring
+#' @param x a utfstring
+encoding <- function(x) {
+    if (!inherits(x, "utfstring")) {
+        stop("expect utstring")
+    }
+    attr(x, "encoding")
+}
+
+
 # #' Calcuate number of bytes of each code point in a UTF-8 encoded text.
 # #' @param text a scalar character
 # #' @export
@@ -166,4 +176,24 @@ as.utfstring <- function(x, encoding) {
         }
     }
     stop("unsupported type")
+}
+
+
+#' @method as.character utfstring
+#' @export
+as.character.utfstring <- function(x, ...) {
+    if (inherits(x, "utfstring")) {
+        encoding <- attr(x, "encoding")
+        if (encoding == "UTF-8") {
+            text <- rawToChar(x)
+            Encoding(text) <- "UTF-8"
+            text
+        } else if (startsWith(encoding, "UTF-16")) {
+            utf16_to_text(x)
+        } else if (startsWith(encoding, "UTF-32")) {
+            utf32_to_text(x)
+        }
+    } else {
+        stop("unsupported type")
+    }
 }
