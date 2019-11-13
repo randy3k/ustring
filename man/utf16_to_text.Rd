@@ -2,7 +2,7 @@
 % Please edit documentation in R/utftools.R
 \name{utf16_to_text}
 \alias{utf16_to_text}
-\title{Convert a UTF-16 utfstring to UTF-8 string.}
+\title{Convert a UTF-16 utfstring to UTF-8 text.}
 \usage{
 utf16_to_text(s)
 }
@@ -10,5 +10,5 @@ utf16_to_text(s)
 \item{s}{a UTF-16 utfstring}
 }
 \description{
-Convert a UTF-16 utfstring to UTF-8 string.
+Convert a UTF-16 utfstring to UTF-8 text.
 }

@@ -180,6 +180,7 @@ as.utfstring <- function(x, encoding) {
 
 
 #' @method as.character utfstring
+#' @param x a utfstring
 #' @export
 as.character.utfstring <- function(x, ...) {
     if (inherits(x, "utfstring")) {

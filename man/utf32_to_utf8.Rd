@@ -2,7 +2,7 @@
 % Please edit documentation in R/utftools.R
 \name{utf32_to_utf8}
 \alias{utf32_to_utf8}
-\title{Convert a UTF-32 utfstring to UTF-8 string.}
+\title{Convert a UTF-32 utfstring to UTF-8 utfstring.}
 \usage{
 utf32_to_utf8(s)
 }
@@ -10,5 +10,5 @@ utf32_to_utf8(s)
 \item{s}{a UTF-32 utfstring}
 }
 \description{
-Convert a UTF-32 utfstring to UTF-8 string.
+Convert a UTF-32 utfstring to UTF-8 utfstring.
 }

@@ -7,7 +7,7 @@
 utf8_to_utf16(text, endian = "little")
 }
 \arguments{
-\item{text}{a scalar character}
+\item{text}{a scalar character or UTF-8 utfstring}
 
 \item{endian}{little endian or big endian?}
 }

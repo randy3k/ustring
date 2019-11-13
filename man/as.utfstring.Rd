@@ -4,10 +4,12 @@
 \alias{as.utfstring}
 \title{Convert a scaler character to utfstring}
 \usage{
-as.utfstring(x)
+as.utfstring(x, encoding)
 }
 \arguments{
 \item{x}{a scalar character}
+
+\item{encoding}{a scalar character}
 }
 \description{
 Convert a scaler character to utfstring
