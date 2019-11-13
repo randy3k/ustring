@@ -3,6 +3,10 @@ test_that("utf16 works", {
     s_utf16 <- utf8_to_utf16(s)
     expect_equal(ncodept(s_utf16), 3)
     expect_equal(codept(s_utf16), c(97L, 66560L, 120634L))
+
+    s_utf16 <- utf8_to_utf16(s, endian = "big")
+    expect_equal(ncodept(s_utf16), 3)
+    expect_equal(codept(s_utf16), c(97L, 66560L, 120634L))
 })
 
 
