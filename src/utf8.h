@@ -17,7 +17,7 @@ int utf8_codelen(uint32_t cp);
 @param s utf8 string
 @param n the length of the string
 */
-size_t utf8_ncodept(const unsigned char* s, size_t n);
+size_t utf8_npt(const unsigned char* s, size_t n);
 
 int utf8_encode1(const unsigned char* s, uint32_t* cp);
 int utf8_decode1(const uint32_t cp, unsigned char* s);
