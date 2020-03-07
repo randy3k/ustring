@@ -4,10 +4,12 @@
 \alias{as.character.utfstring}
 \title{Convert a utfstring to text}
 \usage{
-\method{as.character}{utfstring}(s, ...)
+\method{as.character}{utfstring}(x, ...)
 }
 \arguments{
 \item{x}{a utfstring}
+
+\item{...}{ignored}
 }
 \description{
 Convert a utfstring to text

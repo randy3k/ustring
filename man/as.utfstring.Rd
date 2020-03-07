@@ -2,14 +2,19 @@
 % Please edit documentation in R/utftools.R
 \name{as.utfstring.utfstring}
 \alias{as.utfstring.utfstring}
+\alias{as.utfstring}
 \title{Convert a scaler character to utfstring}
 \usage{
-\method{as.utfstring}{utfstring}(x, encoding)
+\method{as.utfstring}{utfstring}(x, encoding, ...)
+
+as.utfstring(x, ...)
 }
 \arguments{
 \item{x}{a scalar character}
 
 \item{encoding}{a scalar character}
+
+\item{...}{ignored}
 }
 \description{
 Convert a scaler character to utfstring

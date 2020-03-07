@@ -125,20 +125,23 @@ utf32_to_text <- function(s) {
 
 
 #' @export
-print.utfstring <- function(s, ...) {
-    encoding <- attr(s, "encoding")
+#' @method print utfstring
+print.utfstring <- function(x, ...) {
+    encoding <- attr(x, "encoding")
     cat(encoding, ": ", sep = "")
-    cat(s)
+    cat(x)
     cat("\n")
 }
 
 
 #' Convert a scaler character to utfstring
 #' @method as.utfstring character
+#' @rdname as.utfstring
 #' @export
 #' @param x a scalar character
 #' @param encoding a scalar character
-as.utfstring.character <- function(x, encoding) {
+#' @param ... ignored
+as.utfstring.character <- function(x, encoding, ...) {
     if (missing(encoding) || encoding == "UTF-8") {
         x <- charToRaw(enc2utf8(x))
         attr(x, "encoding") <- "UTF-8"
@@ -171,10 +174,12 @@ as.utfstring.character <- function(x, encoding) {
 
 #' Convert a scaler character to utfstring
 #' @method as.utfstring utfstring
+#' @rdname as.utfstring
 #' @export
 #' @param x a scalar character
 #' @param encoding a scalar character
-as.utfstring.utfstring <- function(x, encoding) {
+#' @param ... ignored
+as.utfstring.utfstring <- function(x, encoding, ...) {
     if (!missing(encoding) && attr(x, "encoding") != encoding) {
         stop("incompatible encoding")
     }
@@ -182,6 +187,7 @@ as.utfstring.utfstring <- function(x, encoding) {
 }
 
 #' @export
+#' @rdname as.utfstring
 as.utfstring <- function(x, ...) {
     UseMethod("as.utfstring", x)
 }
@@ -189,16 +195,17 @@ as.utfstring <- function(x, ...) {
 #' Convert a utfstring to text
 #' @method as.character utfstring
 #' @param x a utfstring
+#' @param ... ignored
 #' @export
-as.character.utfstring <- function(s, ...) {
-    if (inherits(s, "utfstring")) {
-        encoding <- attr(s, "encoding")
+as.character.utfstring <- function(x, ...) {
+    if (inherits(x, "utfstring")) {
+        encoding <- attr(x, "encoding")
         if (encoding == "UTF-8") {
-            utf8_to_text(s)
+            utf8_to_text(x)
         } else if (startsWith(encoding, "UTF-16")) {
-            utf16_to_text(s)
+            utf16_to_text(x)
         } else if (startsWith(encoding, "UTF-32")) {
-            utf32_to_text(s)
+            utf32_to_text(x)
         }
     } else {
         stop("unsupported type")
