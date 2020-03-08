@@ -14,20 +14,20 @@ knitr::opts_chunk$set(
 ```
 
 ```{r results='asis', echo = FALSE, eval = TRUE}
-d <- packageDescription("utftools")
+d <- packageDescription("ustring")
 ```
 
 ```{r results="asis", echo = FALSE, eval = TRUE}
 cat(c("# ", paste(trimws(strsplit(d$Title, "\n")[[1]]), collapse = " ")))
 ```
 
-[![Github Action](https://github.com/randy3k/utftools/workflows/build/badge.svg?branch=master)](https://github.com/randy3k/utftools)
-[![codecov](https://codecov.io/gh/randy3k/utftools/branch/master/graph/badge.svg)](https://codecov.io/gh/randy3k/utftools)
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/utftools)](https://cran.r-project.org/package=utftools)
-[![](http://cranlogs.r-pkg.org/badges/grand-total/utftools)](https://cran.r-project.org/package=utftools)
+[![Github Action](https://github.com/randy3k/ustring/workflows/build/badge.svg?branch=master)](https://github.com/randy3k/ustring)
+[![codecov](https://codecov.io/gh/randy3k/ustring/branch/master/graph/badge.svg)](https://codecov.io/gh/randy3k/ustring)
+[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/ustring)](https://cran.r-project.org/package=ustring)
+[![](http://cranlogs.r-pkg.org/badges/grand-total/ustring)](https://cran.r-project.org/package=ustring)
 
 
-Documentation: [http://randy3k.github.io/utftools](https://randy3k.github.io/utftools)
+Documentation: [http://randy3k.github.io/ustring](https://randy3k.github.io/ustring)
 
 ```{r results="asis", echo = FALSE, eval = TRUE}
 cat(d$Description)
@@ -35,24 +35,24 @@ cat(d$Description)
 
 ## Installation
 
-You can install the released version of utftools from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of ustring from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-install.packages("utftools")
+install.packages("ustring")
 ```
 
 And the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("randy3k/utftools")
+devtools::install_github("randy3k/ustring")
 ```
 ## Example
 
 This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
-library(utftools)
+library(ustring)
 ## basic example code
 ```
 
