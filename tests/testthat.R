@@ -1,4 +1,4 @@
 library(testthat)
-library(utftools)
+library(ustring)
 
-test_check("utftools")
+test_check("ustring")
