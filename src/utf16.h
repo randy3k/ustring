@@ -14,8 +14,8 @@
 
 int utf16_codelen(uint32_t cp);
 
-size_t utf16_npt_little(const unsigned char* s, size_t n);
-size_t utf16_npt_big(const unsigned char* s, size_t n);
+size_t utf16_ncp_little(const unsigned char* s, size_t n);
+size_t utf16_ncp_big(const unsigned char* s, size_t n);
 
 int utf16_encode1_little(const unsigned char* s, uint32_t* cp);
 int utf16_encode1_big(const unsigned char* s, uint32_t* cp);

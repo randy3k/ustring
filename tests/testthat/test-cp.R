@@ -1,4 +1,4 @@
-test_that("cp works", {
+test_that("code_points works", {
     s <- "a𐐀𝜺"
     for (x in list(
             s,
@@ -7,7 +7,7 @@ test_that("cp works", {
             text_to_utf16(s, endian = "big"),
             text_to_utf32(s),
             text_to_utf32(s, endian = "big"))) {
-        expect_equal(npt(x), 3)
-        expect_equal(codept(x), c(97L, 66560L, 120634L))
+        expect_equal(n_code_points(x), 3)
+        expect_equal(code_points(x), c(97L, 66560L, 120634L))
     }
 })

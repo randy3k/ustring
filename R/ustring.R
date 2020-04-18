@@ -6,18 +6,18 @@
 #' Calculate the number of code points
 #' @param x a scalar character or ustring
 #' @export
-npt <- function(x) {
+n_code_points <- function(x) {
     if (is.character(x)) {
-        return(.Call(C_npt_text, x))
+        return(.Call(C_ncp_text, x))
     }
     if (is.raw(x)) {
         encoding <- attr(x, "encoding")
         if (is.null(encoding) || startsWith(encoding, "UTF-8")) {
-            return(.Call(C_npt_utf8, x))
+            return(.Call(C_ncp_utf8, x))
         } else if (startsWith(encoding, "UTF-16")) {
-            return(.Call(C_npt_utf16, x))
+            return(.Call(C_ncp_utf16, x))
         } else if (startsWith(encoding, "UTF-32")) {
-            return(.Call(C_npt_utf32, x))
+            return(.Call(C_ncp_utf32, x))
         }
     }
     stop("unsupported type")
@@ -27,17 +27,17 @@ npt <- function(x) {
 #' Unicode code points
 #' @param x a scalar character or ustring
 #' @export
-codept <- function(x) {
+code_points <- function(x) {
     if (is.character(x)) {
-        return(.Call(C_codept_text, x))
+        return(.Call(C_code_points_text, x))
     } else if (is.raw(x)) {
         encoding <- attr(x, "encoding")
         if (is.null(encoding) || startsWith(encoding, "UTF-8")) {
-            return(.Call(C_codept_utf8, x))
+            return(.Call(C_code_points_utf8, x))
         } else if (startsWith(encoding, "UTF-16")) {
-            return(.Call(C_codept_utf16, x))
+            return(.Call(C_code_points_utf16, x))
         } else if (startsWith(encoding, "UTF-32")) {
-            return(.Call(C_codept_utf32, x))
+            return(.Call(C_code_points_utf32, x))
         }
     }
     stop("unsupported type")

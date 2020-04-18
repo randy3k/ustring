@@ -12,7 +12,7 @@ int utf16_codelen(uint32_t cp) {
     return m;
 }
 
-size_t utf16_npt_little(const unsigned char* s, size_t n) {
+size_t utf16_ncp_little(const unsigned char* s, size_t n) {
     size_t k = 0;
     const unsigned char* c = s;
     size_t i;
@@ -46,7 +46,7 @@ size_t utf16_npt_little(const unsigned char* s, size_t n) {
     return k;
 }
 
-size_t utf16_npt_big(const unsigned char* s, size_t n) {
+size_t utf16_ncp_big(const unsigned char* s, size_t n) {
     size_t k = 0;
     const unsigned char* c = s;
     size_t i;

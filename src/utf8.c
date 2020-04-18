@@ -51,7 +51,7 @@ int utf8_codelen(uint32_t cp) {
     return m;
 }
 
-size_t utf8_npt(const unsigned char* s, size_t n) {
+size_t utf8_ncp(const unsigned char* s, size_t n) {
     size_t k = 0;
     int m, j;
     size_t i;

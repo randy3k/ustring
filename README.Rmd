@@ -12,13 +12,15 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 ```
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r results='asis', echo = FALSE, eval = TRUE}
-d <- packageDescription("ustring")
+d <- read.dcf("DESCRIPTION")
 ```
 
 ```{r results="asis", echo = FALSE, eval = TRUE}
-cat(c("# ", paste(trimws(strsplit(d$Title, "\n")[[1]]), collapse = " ")))
+title <- d[colnames(d) == "Title"]
+cat(c("# ", paste(trimws(strsplit(title, "\n")[[1]]), collapse = " ")))
 ```
 
 [![Github Action](https://github.com/randy3k/ustring/workflows/build/badge.svg?branch=master)](https://github.com/randy3k/ustring)
@@ -30,7 +32,7 @@ cat(c("# ", paste(trimws(strsplit(d$Title, "\n")[[1]]), collapse = " ")))
 Documentation: [http://randy3k.github.io/ustring](https://randy3k.github.io/ustring)
 
 ```{r results="asis", echo = FALSE, eval = TRUE}
-cat(d$Description)
+cat(d[colnames(d) == "Description"])
 ```
 
 ## Installation
