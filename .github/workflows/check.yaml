@@ -16,49 +16,94 @@ jobs:
   rchk:
     if: contains(github.event.head_commit.message, '[ci skip]') == false
     runs-on: ubuntu-latest
-    env:
-      NOT_CRAN: true
-      _R_CHECK_CRAN_INCOMING_: false
-    steps:
-      - uses: actions/checkout@v1
-      - uses: r-lib/actions/run-rchk@master
-        with:
-          apt: libgmp3-dev
-          foo: bar
-
-  ubsan:
-    if: contains(github.event.head_commit.message, '[ci skip]') == false
-    runs-on: ubuntu-latest
     container:
-      image: rocker/r-devel-ubsan-clang
-      options: --cap-add=SYS_PTRACE
+      image: rhub/ubuntu-rchk
+      options: --user=root
     env:
       NOT_CRAN: true
       _R_CHECK_CRAN_INCOMING_: false
     steps:
       - uses: actions/checkout@v1
-      - name: Query dependencies
+      - run: apt-get update && apt-get install -y sudo
+      - name: Setup rchk environment
         run: |
-          install.packages('remotes')
-          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
-          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
-        shell: RDscript {0}
-      - name: Restore R package cache
-        uses: actions/cache@v2
+          cd /home/docker/R-svn/
+          . /home/docker/rchk/scripts/cmpconfig.inc
+          echo "CPICFLAGS=$CPICFLAGS" >> $GITHUB_ENV
+          echo "CFLAGS=$CFLAGS" >> $GITHUB_ENV
+          echo "CXXFLAGS=$CXXFLAGS" >> $GITHUB_ENV
+          echo "CC=$CC" >> $GITHUB_ENV
+          echo "CXX=$CXX" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+          echo "LLVM_COMPILER=$LLVM_COMPILER" >> $GITHUB_ENV
+          echo "PKG_BUILD_DIR=$PKG_BUILD_DIR" >> $GITHUB_ENV
+          echo "R_LIBS=$R_LIBS" >> $GITHUB_ENV
+          echo "R_LIBSONLY=$R_LIBSONLY" >> $GITHUB_ENV
+          echo "LD=$LD" >> $GITHUB_ENV
+        shell: bash
+      - uses: r-lib/actions/setup-r-dependencies@v1
         with:
-          path: /usr/local/lib/R/site-library
-          key: ubsan-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ubsan-${{ hashFiles('.github/R-version') }}-1-
-      - name: Install libgmp3-dev
+          cache-version: rchk-1
+      - name: Get R package name
         run: |
-          apt-get update
-          apt-get install libgmp3-dev -y
-      - name: Install codetools
-        run: RDscript -e "remotes::install_cran('codetools')"
-      - name: Install dependencies
-        run: |
-          Rscript -e "remotes::install_deps(dependencies = TRUE)"
-          Rscript -e "remotes::install_cran('rcmdcheck')"
-      - name: Running Tests
-        run: |
-          RDscript -e "rcmdcheck::rcmdcheck(args = c('--as-cran', '--no-manual'), error_on = 'warning')"
+          desc<- read.dcf('DESCRIPTION')
+          cat(
+            desc[, colnames(desc) == "Package", drop=TRUE],
+            file = Sys.getenv("GITHUB_ENV"),
+            append = TRUE)
+        shell: Rscript {0}
+      - run: |
+          /home/docker/rchk/scripts/check_package.sh $PACKAGE
+          if [ $(cat packages/lib/$PACKAGE/libs/$PACKAGE.so.bcheck | wc -l) -gt 3 ]; then
+            FAIL=1
+          fi
+          if [ $(cat packages/lib/$PACKAGE/libs/$PACKAGE.so.maacheck | wc -l) -gt 3 ]; then
+            FAIL=1
+          fi
+          cat packages/lib/$PACKAGE/libs/$PACKAGE.so.maacheck
+          cat packages/lib/$PACKAGE/libs/$PACKAGE.so.bcheck
+
+          if [ "$FAIL" = 1 ]; then
+            echo "rchk tests failed."
+            exit 1
+          else
+            echo "rchk tests succeed."
+          fi
+
+
+  # ubsan:
+  #   if: contains(github.event.head_commit.message, '[ci skip]') == false
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: rocker/r-devel-ubsan-clang
+  #     options: --cap-add=SYS_PTRACE
+  #   env:
+  #     NOT_CRAN: true
+  #     _R_CHECK_CRAN_INCOMING_: false
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - name: Query dependencies
+  #       run: |
+  #         install.packages('remotes')
+  #         saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+  #         writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
+  #       shell: RDscript {0}
+  #     - name: Restore R package cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: /usr/local/lib/R/site-library
+  #         key: ubsan-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
+  #         restore-keys: ubsan-${{ hashFiles('.github/R-version') }}-1-
+  #     - name: Install libgmp3-dev
+  #       run: |
+  #         apt-get update
+  #         apt-get install libgmp3-dev -y
+  #     - name: Install codetools
+  #       run: RDscript -e "remotes::install_cran('codetools')"
+  #     - name: Install dependencies
+  #       run: |
+  #         Rscript -e "remotes::install_deps(dependencies = TRUE)"
+  #         Rscript -e "remotes::install_cran('rcmdcheck')"
+  #     - name: Running Tests
+  #       run: |
+  #         RDscript -e "rcmdcheck::rcmdcheck(args = c('--as-cran', '--no-manual'), error_on = 'warning')"
