@@ -31,7 +31,7 @@ static const unsigned char* validate_text(SEXP s_) {
     if (TYPEOF(s_) == STRSXP ) {
         size_t n = LENGTH(s_);
         if (n != 1) {
-            Rf_error("expect one-element character or UTF-8 raw string");
+            Rf_error("expect one-element character");
         }
         SEXP c = Rf_asChar(s_);
         s = (const unsigned char*) R_CHAR(c);
@@ -117,10 +117,12 @@ static const unsigned char* validate_utf32(SEXP s_, int* bom, int* le) {
             if (s[0] == 0 && s[1] == 0 && s[2] == 0xFE && s[3] == 0xFF) {
                 *le = 0;
                 s += 4;
+                *bom = 1;
                 known_endianness = 1;
             } else if (s[0] == 0xFF && s[1] == 0xFE && s[2] == 0 && s[3] == 0) {
                 *le = 1;
                 s += 4;
+                *bom = 1;
                 known_endianness = 1;
             }
         }
