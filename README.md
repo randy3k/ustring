@@ -5,8 +5,7 @@
 
 # Tools For Unicode Strings
 
-[![Github
-Action](https://github.com/randy3k/ustring/workflows/build/badge.svg?branch=master)](https://github.com/randy3k/ustring)
+[![R-CMD-check](https://github.com/randy3k/ustring/actions/workflows/check.yml/badge.svg)](https://github.com/randy3k/ustring/actions/workflows/check.yml)
 [![codecov](https://codecov.io/gh/randy3k/ustring/branch/master/graph/badge.svg)](https://codecov.io/gh/randy3k/ustring)
 [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/ustring)](https://cran.r-project.org/package=ustring)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/ustring)](https://cran.r-project.org/package=ustring)
