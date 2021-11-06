@@ -1,13 +1,18 @@
-name: R-CMD-check
+name: Check
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
 
 jobs:
   cleanup:
+    if: contains(github.event.head_commit.message, '[ci skip]') == false
     name: Cancel Previous Runs
     runs-on: ubuntu-latest
     steps:
-      - uses: styfle/cancel-workflow-action@0.9.0
+      - uses: styfle/cancel-workflow-action@0.9.1
         with:
           access_token: ${{ github.token }}
 
@@ -61,6 +66,8 @@ jobs:
           RDscript -e "rcmdcheck::rcmdcheck(args = c('--as-cran', '--no-manual'), error_on = 'warning')"
 
   rcmdcheck:
+    if: contains(github.event.head_commit.message, '[ci skip]') == false
+
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
@@ -92,9 +99,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
-          extra-packages: |
-            rcmdcheck
-            covr
+          extra-packages: rcmdcheck
 
       - uses: r-lib/actions/check-r-package@v1
 
@@ -109,8 +114,3 @@ jobs:
         with:
           name: ${{ runner.os }}-r${{ matrix.config.r }}-results
           path: check
-
-      - name: Codecov
-        run: Rscript -e "covr::codecov()"
-        env:
-          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
