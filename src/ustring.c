@@ -322,7 +322,7 @@ SEXP C_utf16_to_text(SEXP s_) {
     utfsize_t k = utf16_nbytes(s, n, le);
     SEXP p = PROTECT(Rf_allocVector(STRSXP, 1));
     unsigned char* t;
-    t = (unsigned char*) malloc(k.utf8 * sizeof(char));
+    t = (unsigned char*) malloc(k.utf8 * sizeof(char) + 1);
     unsigned char* w = t;
     utf16_cp_collector(s, n, utf16_to_utf8_callback, &w, le);
     w[0] = '\0';
@@ -381,7 +381,7 @@ SEXP C_utf32_to_text(SEXP s_) {
     utfsize_t k = utf32_nbytes(s, n, le);
     SEXP p = PROTECT(Rf_allocVector(STRSXP, 1));
     unsigned char* t;
-    t = (unsigned char*) malloc(k.utf8 * sizeof(char));
+    t = (unsigned char*) malloc(k.utf8 * sizeof(char) + 1);
     unsigned char* w = t;
     utf32_cp_collector(s, n, utf32_to_utf8_callback, &w, le);
     w[0] = '\0';
