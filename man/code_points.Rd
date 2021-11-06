@@ -9,6 +9,9 @@ code_points(x)
 \arguments{
 \item{x}{a scalar character or ustring}
 }
+\value{
+an integer vector of code points
+}
 \description{
 Unicode code points
 }

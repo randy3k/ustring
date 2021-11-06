@@ -3,7 +3,7 @@
 "_PACKAGE"
 
 
-#' Calculate the number of code points
+#' Calculate the number of code points. Fasterer version of `nchar(..., type = "chars")`.
 #' @param x a scalar character or ustring
 #' @export
 n_code_points <- function(x) {
@@ -26,6 +26,7 @@ n_code_points <- function(x) {
 
 #' Unicode code points
 #' @param x a scalar character or ustring
+#' @return an integer vector of code points
 #' @export
 code_points <- function(x) {
     if (is.character(x)) {

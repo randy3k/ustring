@@ -2,7 +2,7 @@
 % Please edit documentation in R/ustring.R
 \name{n_code_points}
 \alias{n_code_points}
-\title{Calculate the number of code points}
+\title{Calculate the number of code points. Fasterer version of \code{nchar(..., type = "chars")}.}
 \usage{
 n_code_points(x)
 }
@@ -10,5 +10,5 @@ n_code_points(x)
 \item{x}{a scalar character or ustring}
 }
 \description{
-Calculate the number of code points
+Calculate the number of code points. Fasterer version of \code{nchar(..., type = "chars")}.
 }
