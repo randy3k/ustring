@@ -92,7 +92,9 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
-          extra-packages: rcmdcheck
+          extra-packages: |
+            rcmdcheck
+            covr
 
       - uses: r-lib/actions/check-r-package@v1
 
@@ -107,3 +109,8 @@ jobs:
         with:
           name: ${{ runner.os }}-r${{ matrix.config.r }}-results
           path: check
+
+      - name: Codecov
+        run: Rscript -e "covr::codecov()"
+        env:
+          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
