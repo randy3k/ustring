@@ -21,56 +21,7 @@ jobs:
       options: --user=root
     steps:
       - uses: actions/checkout@v1
-      - run: apt-get update && apt-get install -y sudo
-      - name: Setup rchk environment
-        run: |
-          cd /home/docker/R-svn/
-          . /home/docker/rchk/scripts/cmpconfig.inc
-          echo "CPICFLAGS=$CPICFLAGS" >> $GITHUB_ENV
-          echo "CFLAGS=$CFLAGS" >> $GITHUB_ENV
-          echo "CXXFLAGS=$CXXFLAGS" >> $GITHUB_ENV
-          echo "CC=$CC" >> $GITHUB_ENV
-          echo "CXX=$CXX" >> $GITHUB_ENV
-          echo "PATH=$PATH" >> $GITHUB_ENV
-          echo "LLVM_COMPILER=$LLVM_COMPILER" >> $GITHUB_ENV
-          echo "PKG_BUILD_DIR=$PKG_BUILD_DIR" >> $GITHUB_ENV
-          echo "R_LIBS=$R_LIBS" >> $GITHUB_ENV
-          echo "R_LIBSONLY=$R_LIBSONLY" >> $GITHUB_ENV
-          echo "LD=$LD" >> $GITHUB_ENV
-          # R_LIBS_USER is needed for caching dependencies
-          echo "R_LIBS_USER=$R_LIBS" >> $GITHUB_ENV
-        shell: bash
-      - uses: r-lib/actions/setup-r-dependencies@v1
-        with:
-          cache-version: rchk-1
-      - name: Get R package name
-        run: |
-          desc<- read.dcf('DESCRIPTION')
-          cat(
-            paste0("PACKAGE=", desc[, colnames(desc) == "Package", drop=TRUE]),
-            file = Sys.getenv("GITHUB_ENV"),
-            append = TRUE)
-        shell: Rscript {0}
-      - name: Run rchk test
-        run: |
-          cd /home/docker/R-svn/
-          /home/docker/rchk/scripts/check_package.sh $PACKAGE
-          if [ $(cat packages/lib/$PACKAGE/libs/$PACKAGE.so.bcheck | wc -l) -gt 3 ]; then
-            FAIL=1
-          fi
-          if [ $(cat packages/lib/$PACKAGE/libs/$PACKAGE.so.maacheck | wc -l) -gt 3 ]; then
-            FAIL=1
-          fi
-          cat packages/lib/$PACKAGE/libs/$PACKAGE.so.maacheck
-          cat packages/lib/$PACKAGE/libs/$PACKAGE.so.bcheck
-
-          if [ "$FAIL" = 1 ]; then
-            echo "rchk tests failed."
-            exit 1
-          else
-            echo "rchk tests succeed."
-          fi
-
+      - uses: randy3k/actions/run-rchk@rchk
 
   # ubsan:
   #   if: contains(github.event.head_commit.message, '[ci skip]') == false
