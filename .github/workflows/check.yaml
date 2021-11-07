@@ -19,9 +19,6 @@ jobs:
     container:
       image: rhub/ubuntu-rchk
       options: --user=root
-    env:
-      NOT_CRAN: true
-      _R_CHECK_CRAN_INCOMING_: false
     steps:
       - uses: actions/checkout@v1
       - run: apt-get update && apt-get install -y sudo
@@ -40,6 +37,8 @@ jobs:
           echo "R_LIBS=$R_LIBS" >> $GITHUB_ENV
           echo "R_LIBSONLY=$R_LIBSONLY" >> $GITHUB_ENV
           echo "LD=$LD" >> $GITHUB_ENV
+          # R_LIBS_USER is needed for caching dependencies
+          echo "R_LIBS_USER=$R_LIBS" >> $GITHUB_ENV
         shell: bash
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
@@ -48,11 +47,13 @@ jobs:
         run: |
           desc<- read.dcf('DESCRIPTION')
           cat(
-            desc[, colnames(desc) == "Package", drop=TRUE],
+            paste0("PACKAGE=", desc[, colnames(desc) == "Package", drop=TRUE]),
             file = Sys.getenv("GITHUB_ENV"),
             append = TRUE)
         shell: Rscript {0}
-      - run: |
+      - name: Run rchk test
+        run: |
+          cd /home/docker/R-svn/
           /home/docker/rchk/scripts/check_package.sh $PACKAGE
           if [ $(cat packages/lib/$PACKAGE/libs/$PACKAGE.so.bcheck | wc -l) -gt 3 ]; then
             FAIL=1
