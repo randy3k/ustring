@@ -37,9 +37,13 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
           extra-packages: rcmdcheck
-          cache-version: csan-2
+          cache-version: csan-1
 
       - uses: r-lib/actions/check-r-package@v1
+
+      - name: remove _cache directory
+        run: |
+          rm -rf /usr/local/RDcsan/lib/R/site-library/_cache/
 
       - name: Show testthat output
         if: always()
