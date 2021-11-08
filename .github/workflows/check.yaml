@@ -71,7 +71,7 @@ jobs:
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
     steps:
       - uses: actions/checkout@v2
-      - uses: randy3k/actions-repo/r-check@main
+      - uses: randy3k/gh-actions/r-check@main
         with:
           r-version: ${{ matrix.config.r }}
 
@@ -81,4 +81,4 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
-      - uses: randy3k/actions-repo/r-coverage@main
+      - uses: randy3k/gh-actions/r-coverage@main
