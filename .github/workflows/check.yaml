@@ -17,25 +17,20 @@ jobs:
           access_token: ${{ github.token }}
 
   rchk:
-    if: contains(github.event.head_commit.message, '[ci skip]') == false
     runs-on: ubuntu-latest
-    env:
-      NOT_CRAN: true
-      _R_CHECK_CRAN_INCOMING_: false
+    container:
+      image: rhub/ubuntu-rchk
+      options: --user=root
     steps:
       - uses: actions/checkout@v1
-      - uses: r-lib/actions/run-rchk@master
-        with:
-          apt: libgmp3-dev
+      - uses: randy3k/actions/run-rchk@rchk
 
   ubsan:
-    if: contains(github.event.head_commit.message, '[ci skip]') == false
     runs-on: ubuntu-latest
     container:
       image: rocker/r-devel-ubsan-clang
       options: --cap-add=SYS_PTRACE
     env:
-      NOT_CRAN: true
       _R_CHECK_CRAN_INCOMING_: false
     steps:
       - uses: actions/checkout@v1
@@ -51,10 +46,6 @@ jobs:
           path: /usr/local/lib/R/site-library
           key: ubsan-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ubsan-${{ hashFiles('.github/R-version') }}-1-
-      - name: Install libgmp3-dev
-        run: |
-          apt-get update
-          apt-get install libgmp3-dev -y
       - name: Install codetools
         run: RDscript -e "remotes::install_cran('codetools')"
       - name: Install dependencies
