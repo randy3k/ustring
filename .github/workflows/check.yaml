@@ -18,6 +18,10 @@ jobs:
       options: --user=root
     steps:
       - uses: actions/checkout@v1
+      - uses: r-lib/actions/setup-r@v1
+        with:
+          install-r: false
+          use-public-rspm: true
       - uses: randy3k/actions/run-rchk@rchk
         with:
           cache-version: rchk-2
