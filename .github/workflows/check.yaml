@@ -31,14 +31,13 @@ jobs:
       - run: |
           ln -s /usr/local/bin/RDcsan /usr/local/bin/R
           ln -s /usr/local/bin/RDscriptcsan /usr/local/bin/Rscript
+          echo R_LIBS_USER=/usr/local/RDcsan/lib/R/site-library >> $GITHUB_ENV
         shell: bash
 
       - uses: r-lib/actions/setup-r-dependencies@v1
         with:
           extra-packages: rcmdcheck
-          cache-version: csan-1
-        env:
-           R_LIBS_USER: /usr/local/RDcsan/lib/R/site-library
+          cache-version: csan-2
 
       - uses: r-lib/actions/check-r-package@v1
 
