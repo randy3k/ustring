@@ -7,7 +7,7 @@ on:
     branches: [main, master]
 
 jobs:
-  cleanup:
+  cancel-workflow-action:
     if: contains(github.event.head_commit.message, '[ci skip]') == false
     name: Cancel Previous Runs
     runs-on: ubuntu-latest
@@ -56,7 +56,7 @@ jobs:
         run: |
           RDscript -e "rcmdcheck::rcmdcheck(args = c('--as-cran', '--no-manual'), error_on = 'warning')"
 
-  rcmdcheck:
+  check:
     strategy:
       fail-fast: false
       matrix:
@@ -72,6 +72,14 @@ jobs:
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
     steps:
       - uses: actions/checkout@v2
-      - uses: randy3k/actions-repo/check-r@main
+      - uses: randy3k/actions-repo/r-check@main
         with:
           r-version: ${{ matrix.config.r }}
+
+  coverage:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: randy3k/actions-repo/r-coverage@main
