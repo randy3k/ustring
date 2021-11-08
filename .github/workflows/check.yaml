@@ -33,6 +33,11 @@ jobs:
       _R_CHECK_CRAN_INCOMING_: false
     steps:
       - uses: actions/checkout@v1
+      - uses: r-lib/actions/setup-r@v1
+        with:
+          install-r: false
+          use-public-rspm: true
+
       - name: Query dependencies
         run: |
           install.packages('remotes')
@@ -71,7 +76,7 @@ jobs:
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
     steps:
       - uses: actions/checkout@v2
-      - uses: randy3k/actions-repo/r-check@main
+      - uses: randy3k/gh-actions/r-check@main
         with:
           r-version: ${{ matrix.config.r }}
 
@@ -81,4 +86,4 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v2
-      - uses: randy3k/actions-repo/r-coverage@main
+      - uses: randy3k/gh-actions/r-coverage@main
