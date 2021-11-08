@@ -18,13 +18,7 @@ jobs:
       options: --user=root
     steps:
       - uses: actions/checkout@v1
-      - uses: r-lib/actions/setup-r@v1
-        with:
-          install-r: false
-          use-public-rspm: true
       - uses: randy3k/actions/run-rchk@rchk
-        with:
-          cache-version: rchk-2
 
   ubsan:
     runs-on: ubuntu-latest
@@ -35,34 +29,15 @@ jobs:
       _R_CHECK_CRAN_INCOMING_: false
     steps:
       - uses: actions/checkout@v1
-
-      - run: |
-          apt-get update
-          apt-get install lsb-core
+      - name: Setup
+        run: |
+          ln -sf /usr/local/bin/RD /usr/local/bin/R
+          ln -sf /usr/local/bin/RDscript /usr/local/bin/Rscript
+          echo R_LIBS_USER=/usr/local/lib/R/site-library >> $GITHUB_ENV
         shell: bash
-      - uses: r-lib/actions/setup-r@v1
+      - uses: randy3k/gh-actions/r-install-deps@main
         with:
-          install-r: false
-          use-public-rspm: true
-
-      - name: Query dependencies
-        run: |
-          install.packages('remotes')
-          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
-          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
-        shell: RDscript {0}
-      - name: Restore R package cache
-        uses: actions/cache@v2
-        with:
-          path: /usr/local/lib/R/site-library
-          key: ubsan-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
-          restore-keys: ubsan-${{ hashFiles('.github/R-version') }}-1-
-      - name: Install codetools
-        run: RDscript -e "remotes::install_cran('codetools')"
-      - name: Install dependencies
-        run: |
-          Rscript -e "remotes::install_deps(dependencies = TRUE)"
-          Rscript -e "remotes::install_cran('rcmdcheck')"
+          extra-packages: rcmdcheck
       - name: Running Tests
         run: |
-          RDscript -e "rcmdcheck::rcmdcheck(args = c('--as-cran', '--no-manual'), error_on = 'warning')"
+          Rscript -e "rcmdcheck::rcmdcheck(args = c('--as-cran', '--no-manual'), error_on = 'warning')"
