@@ -35,7 +35,6 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
 
-
   rchk:
     runs-on: ubuntu-latest
     container:
@@ -44,7 +43,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: randy3k/gh-actions/r-rchk@main
 
   ubsan:
@@ -55,7 +54,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: randy3k/gh-actions/r-ubsan@main
 
   coverage:
