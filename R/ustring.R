@@ -49,7 +49,7 @@ code_points <- function(x) {
 #' @return a scalar character
 #' @export
 code_points_to_text <- function(x) {
-    return(.Call(C_code_points_to_text, x))
+    return(.Call(C_code_points_to_text, as.integer(x)))
 }
 
 #' Convert unicode code points to UTF-8 ustring.
@@ -57,7 +57,7 @@ code_points_to_text <- function(x) {
 #' @return a scalar character
 #' @export
 code_points_to_utf8 <- function(x) {
-    return(.Call(C_code_points_to_utf8, x))
+    return(.Call(C_code_points_to_utf8, as.integer(x)))
 }
 
 #' Convert unicode code points to UTF-16 ustring.
@@ -66,7 +66,7 @@ code_points_to_utf8 <- function(x) {
 #' @return a scalar character
 #' @export
 code_points_to_utf16 <- function(x, endian = "big") {
-    return(.Call(C_code_points_to_utf16, x, endian))
+    return(.Call(C_code_points_to_utf16, as.integer(x), endian))
 }
 
 #' Convert unicode code points to UTF-32 ustring.
@@ -75,7 +75,7 @@ code_points_to_utf16 <- function(x, endian = "big") {
 #' @return a scalar character
 #' @export
 code_points_to_utf32 <- function(x, endian = "big") {
-    return(.Call(C_code_points_to_utf32, x, endian))
+    return(.Call(C_code_points_to_utf32, as.integer(x), endian))
 }
 
 #' Show the encoding of a ustring
