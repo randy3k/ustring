@@ -30,20 +30,53 @@ n_code_points <- function(x) {
 #' @export
 code_points <- function(x) {
     if (is.character(x)) {
-        return(.Call(C_code_points_text, x))
+        return(.Call(C_text_to_code_points, x))
     } else if (is.raw(x)) {
         encoding <- attr(x, "encoding")
         if (is.null(encoding) || startsWith(encoding, "UTF-8")) {
-            return(.Call(C_code_points_utf8, x))
+            return(.Call(C_utf8_to_code_points, x))
         } else if (startsWith(encoding, "UTF-16")) {
-            return(.Call(C_code_points_utf16, x))
+            return(.Call(C_utf16_to_code_points, x))
         } else if (startsWith(encoding, "UTF-32")) {
-            return(.Call(C_code_points_utf32, x))
+            return(.Call(C_utf32_to_code_points, x))
         }
     }
     stop("unsupported type")
 }
 
+#' Convert unicode code points to text
+#' @param x a vector of code points
+#' @return a scalar character
+#' @export
+code_points_to_text <- function(x) {
+    return(.Call(C_code_points_to_text, x))
+}
+
+#' Convert unicode code points to UTF-8 ustring.
+#' @param x a vector of code points
+#' @return a scalar character
+#' @export
+code_points_to_utf8 <- function(x) {
+    return(.Call(C_code_points_to_utf8, x))
+}
+
+#' Convert unicode code points to UTF-16 ustring.
+#' @param x a vector of code points
+#' @param endian little endian or big endian?
+#' @return a scalar character
+#' @export
+code_points_to_utf16 <- function(x, endian = "big") {
+    return(.Call(C_code_points_to_utf16, x, endian))
+}
+
+#' Convert unicode code points to UTF-32 ustring.
+#' @param x a vector of code points
+#' @param endian little endian or big endian?
+#' @return a scalar character
+#' @export
+code_points_to_utf32 <- function(x, endian = "big") {
+    return(.Call(C_code_points_to_utf32, x, endian))
+}
 
 #' Show the encoding of a ustring
 #' @param x a ustring
@@ -83,7 +116,7 @@ utf8_to_text <- function(s) {
 #' @param text a scalar character
 #' @param endian little endian or big endian?
 #' @export
-text_to_utf16 <- function(text, endian = "little") {
+text_to_utf16 <- function(text, endian = "big") {
     .Call(C_text_to_utf16, text, endian)
 }
 
@@ -100,7 +133,7 @@ utf16_to_text <- function(s) {
 #' @param text UTF-8 ustring
 #' @param endian little endian or big endian?
 #' @export
-text_to_utf32 <- function(text, endian = "little") {
+text_to_utf32 <- function(text, endian = "big") {
     .Call(C_text_to_utf32, text, endian)
 }
 

@@ -4,7 +4,7 @@
 \alias{text_to_utf16}
 \title{Convert a UTF-8 text to UTF-16 ustring.}
 \usage{
-text_to_utf16(text, endian = "little")
+text_to_utf16(text, endian = "big")
 }
 \arguments{
 \item{text}{a scalar character}

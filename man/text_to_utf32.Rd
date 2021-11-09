@@ -4,7 +4,7 @@
 \alias{text_to_utf32}
 \title{Convert UTF-8 text to UTF-32 ustring.}
 \usage{
-text_to_utf32(text, endian = "little")
+text_to_utf32(text, endian = "big")
 }
 \arguments{
 \item{text}{UTF-8 ustring}

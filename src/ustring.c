@@ -192,7 +192,7 @@ void code_points_callback(uint32_t cp, void* data, size_t i) {
 }
 
 
-SEXP C_code_points_text(SEXP s_) {
+SEXP C_text_to_code_points(SEXP s_) {
     PROTECT(s_);
     const unsigned char* s = validate_text(s_);;
     size_t n =strlen((const char*) s);
@@ -204,7 +204,7 @@ SEXP C_code_points_text(SEXP s_) {
     return p;
 }
 
-SEXP C_code_points_utf8(SEXP s_) {
+SEXP C_utf8_to_code_points(SEXP s_) {
     PROTECT(s_);
     const unsigned char* s = validate_utf8(s_);;
     size_t n = LENGTH(s_);
@@ -216,7 +216,7 @@ SEXP C_code_points_utf8(SEXP s_) {
     return p;
 }
 
-SEXP C_code_points_utf16(SEXP s_) {
+SEXP C_utf16_to_code_points(SEXP s_) {
     PROTECT(s_);
     int le;
     int bom = 0;
@@ -236,7 +236,7 @@ SEXP C_code_points_utf16(SEXP s_) {
 }
 
 
-SEXP C_code_points_utf32(SEXP s_) {
+SEXP C_utf32_to_code_points(SEXP s_) {
     PROTECT(s_);
     int le;
     int bom = 0;
@@ -250,6 +250,102 @@ SEXP C_code_points_utf32(SEXP s_) {
     return p;
 }
 
+
+SEXP C_code_points_to_text(SEXP x) {
+    PROTECT(x);
+    size_t n = LENGTH(x);
+    size_t len = 0;
+    for (size_t i = 0; i < n; i++) {
+        len += utf8_codelen(INTEGER(x)[i]);
+    }
+    unsigned char* s = (unsigned char *) malloc(sizeof(char) * (len + 1));
+    unsigned char* t = s;
+    int m;
+    for (size_t i = 0; i < n; i++) {
+        m = utf8_decode1(INTEGER(x)[i], t);
+        t = t + m;
+    }
+    t[0] = '\00';
+    SEXP p = PROTECT(Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(p, 0, Rf_mkCharLenCE((const char*) s, len, CE_UTF8));
+    free(s);
+    UNPROTECT(2);
+    return p;
+}
+
+
+SEXP C_code_points_to_utf8(SEXP x) {
+    PROTECT(x);
+    size_t n = LENGTH(x);
+    size_t len = 0;
+    for (size_t i = 0; i < n; i++) {
+        len += utf8_codelen(INTEGER(x)[i]);
+    }
+    SEXP p = PROTECT(Rf_allocVector(RAWSXP, len));
+    unsigned char* t = RAW(p);
+    int m;
+    for (size_t i = 0; i < n; i++) {
+        m = utf8_decode1(INTEGER(x)[i], t);
+        t = t + m;
+    }
+    Rf_setAttrib(p, R_ClassSymbol, Rf_mkString("ustring"));
+    SEXP enc = PROTECT(Rf_mkString("UTF-8"));
+    Rf_setAttrib(p, Rf_install("encoding"), enc);
+    UNPROTECT(3);
+    return p;
+}
+
+SEXP C_code_points_to_utf16(SEXP x, SEXP endian) {
+    PROTECT(x);
+    char le = CHAR(Rf_asChar(endian))[0];
+    size_t n = LENGTH(x);
+    size_t len = 0;
+    for (size_t i = 0; i < n; i++) {
+        len += utf16_codelen(INTEGER(x)[i]);
+    }
+    SEXP p = PROTECT(Rf_allocVector(RAWSXP, len));
+    unsigned char* t = RAW(p);
+    int m;
+    for (size_t i = 0; i < n; i++) {
+        if (le == 'b') {
+            m = utf16_decode1_big(INTEGER(x)[i], t);
+        } else {
+            m = utf16_decode1_little(INTEGER(x)[i], t);
+        }
+        t = t + m;
+    }
+    Rf_setAttrib(p, R_ClassSymbol, Rf_mkString("ustring"));
+    SEXP enc = PROTECT(Rf_mkString(le == 'b' ? "UTF-16BE" : "UTF-16LE"));
+    Rf_setAttrib(p, Rf_install("encoding"), enc);
+    UNPROTECT(3);
+    return p;
+}
+
+SEXP C_code_points_to_utf32(SEXP x, SEXP endian) {
+    PROTECT(x);
+    char le = CHAR(Rf_asChar(endian))[0];
+    size_t n = LENGTH(x);
+    size_t len = 0;
+    for (size_t i = 0; i < n; i++) {
+        len += utf32_codelen(INTEGER(x)[i]);
+    }
+    SEXP p = PROTECT(Rf_allocVector(RAWSXP, len));
+    unsigned char* t = RAW(p);
+    int m;
+    for (size_t i = 0; i < n; i++) {
+        if (le == 'b') {
+            m = utf32_decode1_big(INTEGER(x)[i], t);
+        } else {
+            m = utf32_decode1_little(INTEGER(x)[i], t);
+        }
+        t = t + m;
+    }
+    Rf_setAttrib(p, R_ClassSymbol, Rf_mkString("ustring"));
+    SEXP enc = PROTECT(Rf_mkString(le == 'b' ? "UTF-32BE" : "UTF-32LE"));
+    Rf_setAttrib(p, Rf_install("encoding"), enc);
+    UNPROTECT(3);
+    return p;
+}
 
 SEXP C_text_to_utf8(SEXP s_) {
     PROTECT(s_);
@@ -433,10 +529,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_ncp_utf8", (DL_FUNC) &C_ncp_utf8, 1},
     {"C_ncp_utf16", (DL_FUNC) &C_ncp_utf16, 1},
     {"C_ncp_utf32", (DL_FUNC) &C_ncp_utf32, 1},
-    {"C_code_points_text", (DL_FUNC) &C_code_points_text, 1},
-    {"C_code_points_utf8", (DL_FUNC) &C_code_points_utf8, 1},
-    {"C_code_points_utf16", (DL_FUNC) &C_code_points_utf16, 1},
-    {"C_code_points_utf32", (DL_FUNC) &C_code_points_utf32, 1},
+    {"C_text_to_code_points", (DL_FUNC) &C_text_to_code_points, 1},
+    {"C_utf8_to_code_points", (DL_FUNC) &C_utf8_to_code_points, 1},
+    {"C_utf16_to_code_points", (DL_FUNC) &C_utf16_to_code_points, 1},
+    {"C_utf32_to_code_points", (DL_FUNC) &C_utf32_to_code_points, 1},
+    {"C_code_points_to_text", (DL_FUNC) &C_code_points_to_text, 1},
+    {"C_code_points_to_utf8", (DL_FUNC) &C_code_points_to_utf8, 1},
+    {"C_code_points_to_utf16", (DL_FUNC) &C_code_points_to_utf16, 2},
+    {"C_code_points_to_utf32", (DL_FUNC) &C_code_points_to_utf32, 2},
     {"C_text_to_utf8", (DL_FUNC) &C_text_to_utf8, 1},
     {"C_utf8_to_text", (DL_FUNC) &C_utf8_to_text, 1},
     {"C_text_to_utf16", (DL_FUNC) &C_text_to_utf16, 2},
