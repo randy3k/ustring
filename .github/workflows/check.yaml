@@ -18,26 +18,13 @@ jobs:
       options: --user=root
     steps:
       - uses: actions/checkout@v1
-      - uses: randy3k/actions/run-rchk@rchk
+      - uses: randy3k/gh-actions/r-rchk@main
 
   ubsan:
     runs-on: ubuntu-latest
     container:
       image: rocker/r-devel-ubsan-clang
       options: --cap-add=SYS_PTRACE
-    env:
-      _R_CHECK_CRAN_INCOMING_: false
     steps:
       - uses: actions/checkout@v1
-      - name: Setup
-        run: |
-          ln -sf /usr/local/bin/RD /usr/local/bin/R
-          ln -sf /usr/local/bin/RDscript /usr/local/bin/Rscript
-          echo R_LIBS_USER=/usr/local/lib/R/site-library >> $GITHUB_ENV
-        shell: bash
-      - uses: randy3k/gh-actions/r-install-deps@main
-        with:
-          extra-packages: rcmdcheck
-      - name: Running Tests
-        run: |
-          Rscript -e "rcmdcheck::rcmdcheck(args = c('--as-cran', '--no-manual'), error_on = 'warning')"
+      - uses: randy3k/gh-actions/r-ubsan@main
